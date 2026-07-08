@@ -1,0 +1,31 @@
+# Production stack — behind the host's nginx (which terminates TLS).
+#
+# Two containers, no database (rooms are ephemeral, kept in the signaling
+# server's memory):
+#   - server : Socket.io signaling (SDP/ICE relay + chat)
+#   - client : static SPA served by nginx, which also proxies /socket.io + /api
+#              to the server (see client/nginx/default.conf)
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Only the client is published, on 127.0.0.1:8087. The host nginx reverse-
+# proxies the domain (with WebSocket upgrade) to that port.
+
+services:
+  server:
+    build: ./server
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - MAX_PER_ROOM=8
+    expose:
+      - "5001"
+    restart: unless-stopped
+
+  client:
+    build: ./client
+    depends_on:
+      - server
+    ports:
+      - "127.0.0.1:8087:80"
+    restart: unless-stopped
