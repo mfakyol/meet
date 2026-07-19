@@ -1,4 +1,14 @@
 import type { ReactNode } from "react";
+import {
+  IconMicrophone,
+  IconMicrophoneOff,
+  IconVideo,
+  IconVideoOff,
+  IconScreenShare,
+  IconScreenShareOff,
+  IconMessage,
+  IconPhoneOff,
+} from "@tabler/icons-react";
 
 function ControlButton({
   onClick,
@@ -54,19 +64,19 @@ export function RoomControls({
   return (
     <footer className="flex items-center justify-center gap-3 border-t border-white/10 px-4 py-4">
       <ControlButton onClick={onToggleMic} active={micOn} title={micOn ? "Mikrofonu kapat" : "Mikrofonu aç"}>
-        {micOn ? "🎤" : "🔇"}
+        {micOn ? <IconMicrophone size={22} /> : <IconMicrophoneOff size={22} />}
       </ControlButton>
       <ControlButton onClick={onToggleCam} active={camOn} title={camOn ? "Kamerayı kapat" : "Kamerayı aç"}>
-        {camOn ? "📷" : "🚫"}
+        {camOn ? <IconVideo size={22} /> : <IconVideoOff size={22} />}
       </ControlButton>
       <ControlButton onClick={onToggleShare} active={!sharing} title={sharing ? "Paylaşımı durdur" : "Ekranı paylaş"}>
-        🖥️
+        {sharing ? <IconScreenShareOff size={22} /> : <IconScreenShare size={22} />}
       </ControlButton>
       <ControlButton onClick={onToggleChat} active={!chatOpen} title="Sohbet">
-        💬
+        <IconMessage size={22} />
       </ControlButton>
       <ControlButton onClick={onLeave} danger title="Görüşmeden ayrıl">
-        📞
+        <IconPhoneOff size={22} />
       </ControlButton>
     </footer>
   );

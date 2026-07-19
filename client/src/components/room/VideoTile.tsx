@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { IconMicrophoneOff } from "@tabler/icons-react";
 
 interface Props {
   stream: MediaStream | null;
@@ -54,7 +55,9 @@ export function VideoTile({
       )}
 
       <div className="absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 text-sm">
-        {audioOff && <span title="Mikrofon kapalı">🔇</span>}
+        {audioOff && (
+          <IconMicrophoneOff size={16} className="shrink-0 text-red-400" aria-label="Mikrofon kapalı" />
+        )}
         <span className="truncate font-medium text-white">
           {name}
           {self && " (sen)"}
