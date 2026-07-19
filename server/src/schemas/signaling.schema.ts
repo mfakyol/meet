@@ -40,7 +40,13 @@ export const chatSchema = z.object({
   text: z.string().trim().min(1).max(2000),
 });
 
+// Screen-share announcement: the MediaStream id being shared, or null to stop.
+export const screenSchema = z.object({
+  streamId: z.string().trim().max(200).nullable(),
+});
+
 export type JoinInput = z.infer<typeof joinSchema>;
 export type SignalInput = z.infer<typeof signalSchema>;
 export type StateInput = z.infer<typeof stateSchema>;
 export type ChatInput = z.infer<typeof chatSchema>;
+export type ScreenInput = z.infer<typeof screenSchema>;

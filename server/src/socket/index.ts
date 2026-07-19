@@ -7,6 +7,7 @@ import { registerJoinHandler } from "./handlers/join.handler.js";
 import { registerSignalHandler } from "./handlers/signal.handler.js";
 import { registerStateHandler } from "./handlers/state.handler.js";
 import { registerChatHandler } from "./handlers/chat.handler.js";
+import { registerScreenHandler } from "./handlers/screen.handler.js";
 import { registerLeaveHandler } from "./handlers/leave.handler.js";
 
 // Wire connection handling. Limiters are process-wide (keyed per socket id) and
@@ -24,6 +25,7 @@ export function registerSocketHandlers(io: Server, service: RoomService, logger:
     registerSignalHandler(ctx);
     registerStateHandler(ctx);
     registerChatHandler(ctx);
+    registerScreenHandler(ctx);
     registerLeaveHandler(ctx);
   });
 }
