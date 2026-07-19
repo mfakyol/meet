@@ -11,6 +11,8 @@ interface Props {
   audioOff?: boolean;
   videoOff?: boolean;
   sharing?: boolean;
+  /** Selected audio output device (speaker) to route this tile's audio to. */
+  sinkId?: string | null;
 }
 
 function initials(name: string): string {
@@ -27,6 +29,7 @@ export function VideoTile({
   audioOff,
   videoOff,
   sharing,
+  sinkId,
 }: Props) {
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -35,6 +38,14 @@ export function VideoTile({
       ref.current.srcObject = stream;
     }
   }, [stream]);
+
+  // Route audio to the selected speaker (where supported; not for muted self tiles).
+  useEffect(() => {
+    const el = ref.current as (HTMLVideoElement & { setSinkId?: (id: string) => Promise<void> }) | null;
+    if (el && sinkId && !muted && typeof el.setSinkId === "function") {
+      void el.setSinkId(sinkId).catch(() => {});
+    }
+  }, [sinkId, muted, stream]);
 
   return (
     <Paper radius="md" withBorder className={classes.tile}>

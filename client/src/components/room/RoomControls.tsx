@@ -50,6 +50,8 @@ interface Props {
   onToggleShare: () => void;
   onToggleChat: () => void;
   onLeave: () => void;
+  /** Device-settings control (gear + popover), rendered in the bar. */
+  settings?: ReactNode;
 }
 
 const ICON = 24;
@@ -66,6 +68,7 @@ export function RoomControls({
   onToggleShare,
   onToggleChat,
   onLeave,
+  settings,
 }: Props) {
   return (
     <Group justify="center" gap="sm" p="md" style={{ borderTop: "1px solid var(--mantine-color-dark-4)" }}>
@@ -102,6 +105,8 @@ export function RoomControls({
       >
         <IconMessage size={ICON} />
       </ControlButton>
+
+      {settings}
 
       <ControlButton onClick={onLeave} title="Görüşmeden ayrıl" variant="filled" color="red">
         <IconPhoneOff size={ICON} />

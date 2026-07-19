@@ -20,6 +20,13 @@ export interface UseRoom {
   toggleCam: () => void;
   toggleShare: () => Promise<void>;
   sendChat: (text: string) => void;
+  /** Device selection. */
+  cameraId: string | null;
+  micId: string | null;
+  speakerId: string | null;
+  setCamera: (deviceId: string) => Promise<void>;
+  setMic: (deviceId: string) => Promise<void>;
+  setSpeaker: (deviceId: string) => void;
 }
 
 // Derive a peer's camera stream (the received stream that isn't the screen).
@@ -43,6 +50,7 @@ export function useRoom(roomId: string, name: string): UseRoom {
   const [error, setError] = useState<string | null>(null);
   const [peersMap, setPeersMap] = useState<Map<string, RemotePeer>>(new Map());
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [speakerId, setSpeakerId] = useState<string | null>(null);
 
   // Forward refs let the three hooks reference each other despite the cycle
   // (media ← signaling ← peers ← media). All are read at event time, not build time.
@@ -144,6 +152,7 @@ export function useRoom(roomId: string, name: string): UseRoom {
       pcs.setSharedScreen(screenTrack, screenStream);
       signaling.emitScreen(screenStream?.id ?? null);
     },
+    onReplaceTrack: (oldTrack, newTrack, stream) => pcs.replaceTrack(oldTrack, newTrack, stream),
     onError: setError,
   });
   mediaRef.current = media;
@@ -236,5 +245,11 @@ export function useRoom(roomId: string, name: string): UseRoom {
       const t = text.trim();
       if (t) signaling.emitChat(t);
     },
+    cameraId: media.cameraId,
+    micId: media.micId,
+    speakerId,
+    setCamera: media.setCamera,
+    setMic: media.setMic,
+    setSpeaker: setSpeakerId,
   };
 }

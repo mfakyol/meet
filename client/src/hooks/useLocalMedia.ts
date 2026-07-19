@@ -11,6 +11,12 @@ interface Options {
     screenTrack: MediaStreamTrack | null,
     screenStream: MediaStream | null
   ) => void;
+  /** A camera/mic device was switched — swap the track on every connection. */
+  onReplaceTrack: (
+    oldTrack: MediaStreamTrack | null,
+    newTrack: MediaStreamTrack,
+    stream: MediaStream
+  ) => void;
   /** Surface a user-facing error (media denied, …). */
   onError: (message: string) => void;
 }
@@ -22,6 +28,9 @@ export interface LocalMedia {
   micOn: boolean;
   camOn: boolean;
   sharing: boolean;
+  /** Active camera/mic device ids (for the device pickers). */
+  cameraId: string | null;
+  micId: string | null;
   /** The live camera/mic stream, readable synchronously by the peer layer. */
   streamRef: RefObject<MediaStream | null>;
   /** The screen currently being shared, if any (for peers joining mid-share). */
@@ -31,6 +40,9 @@ export interface LocalMedia {
   toggleMic: () => void;
   toggleCam: () => void;
   toggleShare: () => Promise<void>;
+  /** Switch the active camera / microphone device. */
+  setCamera: (deviceId: string) => Promise<void>;
+  setMic: (deviceId: string) => Promise<void>;
   /** Stop all local + screen tracks (on leave/unmount). */
   cleanup: () => void;
 }
@@ -51,9 +63,15 @@ export function useLocalMedia(options: Options): LocalMedia {
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [sharing, setSharing] = useState(false);
+  const [cameraId, setCameraId] = useState<string | null>(null);
+  const [micId, setMicId] = useState<string | null>(null);
   const apiRef =
     useRef<
-      Omit<LocalMedia, "localStream" | "localScreen" | "micOn" | "camOn" | "sharing"> | undefined
+      | Omit<
+          LocalMedia,
+          "localStream" | "localScreen" | "micOn" | "camOn" | "sharing" | "cameraId" | "micId"
+        >
+      | undefined
     >(undefined);
 
   if (!apiRef.current) {
@@ -68,8 +86,51 @@ export function useLocalMedia(options: Options): LocalMedia {
       setLocalStream(stream);
       setMicOn(!!stream?.getAudioTracks().length);
       setCamOn(!!stream?.getVideoTracks().length);
+      setCameraId(stream?.getVideoTracks()[0]?.getSettings().deviceId ?? null);
+      setMicId(stream?.getAudioTracks()[0]?.getSettings().deviceId ?? null);
       return stream;
     }
+
+    // Switch a camera/mic device: acquire the chosen device, rebuild the local
+    // stream keeping the other track, and swap the track on every connection.
+    async function switchDevice(kind: "video" | "audio", deviceId: string): Promise<void> {
+      const cur = streamRef.current;
+      const oldTrack =
+        (kind === "video" ? cur?.getVideoTracks()[0] : cur?.getAudioTracks()[0]) ?? null;
+      let fresh: MediaStream;
+      try {
+        fresh = await navigator.mediaDevices.getUserMedia(
+          kind === "video" ? { video: { deviceId: { exact: deviceId } } } : { audio: { deviceId: { exact: deviceId } } }
+        );
+      } catch {
+        optRef.current.onError(kind === "video" ? "Kamera değiştirilemedi." : "Mikrofon değiştirilemedi.");
+        return;
+      }
+      const newTrack = (kind === "video" ? fresh.getVideoTracks()[0] : fresh.getAudioTracks()[0]) ?? null;
+      if (!newTrack) return;
+      // Preserve the on/off state of the track being replaced.
+      newTrack.enabled = oldTrack ? oldTrack.enabled : true;
+
+      const kept =
+        kind === "video" ? cur?.getAudioTracks() ?? [] : cur?.getVideoTracks() ?? [];
+      const combined = new MediaStream(kind === "video" ? [newTrack, ...kept] : [...kept, newTrack]);
+
+      oldTrack?.stop();
+      streamRef.current = combined;
+      setLocalStream(combined);
+      optRef.current.onReplaceTrack(oldTrack, newTrack, combined);
+
+      if (kind === "video") {
+        setCamOn(newTrack.enabled);
+        setCameraId(deviceId);
+      } else {
+        setMicOn(newTrack.enabled);
+        setMicId(deviceId);
+      }
+    }
+
+    const setCamera = (deviceId: string) => switchDevice("video", deviceId);
+    const setMic = (deviceId: string) => switchDevice("audio", deviceId);
 
     function getSharedScreen(): { track: MediaStreamTrack; stream: MediaStream } | null {
       const stream = screenStreamRef.current;
@@ -131,8 +192,18 @@ export function useLocalMedia(options: Options): LocalMedia {
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     }
 
-    apiRef.current = { streamRef, getSharedScreen, acquire, toggleMic, toggleCam, toggleShare, cleanup };
+    apiRef.current = {
+      streamRef,
+      getSharedScreen,
+      acquire,
+      toggleMic,
+      toggleCam,
+      toggleShare,
+      setCamera,
+      setMic,
+      cleanup,
+    };
   }
 
-  return { localStream, localScreen, micOn, camOn, sharing, ...apiRef.current };
+  return { localStream, localScreen, micOn, camOn, sharing, cameraId, micId, ...apiRef.current };
 }

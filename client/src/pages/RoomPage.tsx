@@ -16,6 +16,7 @@ import { useRoom } from "@/hooks/useRoom";
 import { VideoTile } from "@/components/room/VideoTile";
 import { ChatPanel } from "@/components/room/ChatPanel";
 import { RoomControls } from "@/components/room/RoomControls";
+import { DeviceSettings } from "@/components/room/DeviceSettings";
 import { NameGate } from "@/components/room/NameGate";
 
 function gridCols(total: number): number {
@@ -88,6 +89,7 @@ function Room({
                   audioOff={t.audioOff}
                   videoOff={t.videoOff}
                   sharing={t.screen}
+                  sinkId={room.speakerId}
                 />
               ))}
             </SimpleGrid>
@@ -113,6 +115,16 @@ function Room({
         onToggleShare={room.toggleShare}
         onToggleChat={() => setChatOpen((v) => !v)}
         onLeave={onLeave}
+        settings={
+          <DeviceSettings
+            cameraId={room.cameraId}
+            micId={room.micId}
+            speakerId={room.speakerId}
+            onCamera={room.setCamera}
+            onMic={room.setMic}
+            onSpeaker={room.setSpeaker}
+          />
+        }
       />
     </Flex>
   );

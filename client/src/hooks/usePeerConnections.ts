@@ -30,6 +30,16 @@ export interface PeerConnections {
     screenTrack: MediaStreamTrack | null,
     screenStream: MediaStream | null
   ) => void;
+  /**
+   * Swap a local track (camera/mic device switch) on every connection. Replaces
+   * the sender carrying `oldTrack`; if there's none (was watch-only), adds the
+   * new track and renegotiates.
+   */
+  replaceTrack: (
+    oldTrack: MediaStreamTrack | null,
+    newTrack: MediaStreamTrack,
+    stream: MediaStream
+  ) => void;
   /** Tear down and forget one peer. */
   remove: (peerId: string) => void;
   /** Close every connection (on leave/unmount). */
@@ -174,6 +184,18 @@ export function usePeerConnections(options: Options): PeerConnections {
       });
     }
 
+    function replaceTrack(
+      oldTrack: MediaStreamTrack | null,
+      newTrack: MediaStreamTrack,
+      stream: MediaStream
+    ): void {
+      pcs.current.forEach((pc) => {
+        const sender = oldTrack ? pc.getSenders().find((s) => s.track === oldTrack) : undefined;
+        if (sender) void sender.replaceTrack(newTrack);
+        else pc.addTrack(newTrack, stream); // no prior track → renegotiate
+      });
+    }
+
     function remove(peerId: string): void {
       const pc = pcs.current.get(peerId);
       pc?.close();
@@ -191,7 +213,7 @@ export function usePeerConnections(options: Options): PeerConnections {
       screenSenders.current.clear();
     }
 
-    apiRef.current = { ensure, handleSignal, setSharedScreen, remove, closeAll };
+    apiRef.current = { ensure, handleSignal, setSharedScreen, replaceTrack, remove, closeAll };
   }
 
   return apiRef.current;
