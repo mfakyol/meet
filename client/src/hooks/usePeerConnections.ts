@@ -19,14 +19,13 @@ export interface PeerConnections {
   /** Apply an inbound SDP offer/answer or ICE candidate from a peer. */
   handleSignal: (from: string, data: SignalData) => Promise<void>;
   /**
-   * Start/stop screen sharing on every connection. Replaces the outgoing video
-   * track when one exists (camera present), otherwise adds/removes a track and
-   * renegotiates — so sharing works even without a camera.
+   * Start/stop screen sharing on every connection. The screen is sent as a
+   * SEPARATE track/stream (never replacing the camera), so it shows as its own
+   * tile. Adding/removing a track renegotiates — works with or without a camera.
    */
   setSharedScreen: (
     screenTrack: MediaStreamTrack | null,
-    screenStream: MediaStream | null,
-    cameraTrack: MediaStreamTrack | null
+    screenStream: MediaStream | null
   ) => void;
   /** Tear down and forget one peer. */
   remove: (peerId: string) => void;
@@ -43,6 +42,8 @@ export function usePeerConnections(options: Options): PeerConnections {
   const pcs = useRef(new Map<string, RTCPeerConnection>());
   // ICE candidates that arrive before the remote description is set.
   const pendingIce = useRef(new Map<string, RTCIceCandidateInit[]>());
+  // The screen-share sender per connection (so we can remove it on stop).
+  const screenSenders = useRef(new Map<RTCPeerConnection, RTCRtpSender>());
   const apiRef = useRef<PeerConnections | undefined>(undefined);
 
   if (!apiRef.current) {
@@ -64,15 +65,14 @@ export function usePeerConnections(options: Options): PeerConnections {
       const pc = new RTCPeerConnection({ iceServers: getIceServers() });
       pcs.current.set(peerId, pc);
 
-      // Attach local tracks. If we're mid-share, send the screen in place of the
-      // camera so a peer joining during a share sees the screen.
+      // Attach camera + mic. If we're mid-share, also send the screen as a
+      // separate track so a peer joining during a share gets its own screen tile.
       const local = optRef.current.getLocalStream();
+      local?.getTracks().forEach((t) => pc.addTrack(t, local));
       const shared = optRef.current.getSharedScreen();
-      local?.getTracks().forEach((t) => {
-        if (shared && t.kind === "video") return;
-        pc.addTrack(t, local);
-      });
-      if (shared) pc.addTrack(shared.track, shared.stream);
+      if (shared) {
+        screenSenders.current.set(pc, pc.addTrack(shared.track, shared.stream));
+      }
 
       pc.onicecandidate = (e) => {
         if (e.candidate) optRef.current.sendSignal(peerId, { candidate: e.candidate.toJSON() });
@@ -142,26 +142,26 @@ export function usePeerConnections(options: Options): PeerConnections {
 
     function setSharedScreen(
       screenTrack: MediaStreamTrack | null,
-      screenStream: MediaStream | null,
-      cameraTrack: MediaStreamTrack | null
+      screenStream: MediaStream | null
     ): void {
       pcs.current.forEach((pc) => {
-        const videoSender = pc.getSenders().find((s) => s.track?.kind === "video");
-        if (screenTrack) {
-          // Starting/updating a share.
-          if (videoSender) void videoSender.replaceTrack(screenTrack);
-          else if (screenStream) pc.addTrack(screenTrack, screenStream); // → renegotiation
-        } else {
-          // Stopping a share.
-          if (!videoSender) return;
-          if (cameraTrack) void videoSender.replaceTrack(cameraTrack);
-          else pc.removeTrack(videoSender); // → renegotiation
+        const sender = screenSenders.current.get(pc);
+        if (screenTrack && screenStream) {
+          // Start (or replace) the screen track on its own sender.
+          if (sender) void sender.replaceTrack(screenTrack);
+          else screenSenders.current.set(pc, pc.addTrack(screenTrack, screenStream)); // → renegotiation
+        } else if (sender) {
+          // Stop: remove the screen sender and renegotiate.
+          pc.removeTrack(sender);
+          screenSenders.current.delete(pc);
         }
       });
     }
 
     function remove(peerId: string): void {
-      pcs.current.get(peerId)?.close();
+      const pc = pcs.current.get(peerId);
+      pc?.close();
+      if (pc) screenSenders.current.delete(pc);
       pcs.current.delete(peerId);
       pendingIce.current.delete(peerId);
     }
@@ -170,6 +170,7 @@ export function usePeerConnections(options: Options): PeerConnections {
       pcs.current.forEach((pc) => pc.close());
       pcs.current.clear();
       pendingIce.current.clear();
+      screenSenders.current.clear();
     }
 
     apiRef.current = { ensure, handleSignal, setSharedScreen, remove, closeAll };

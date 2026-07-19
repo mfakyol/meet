@@ -6,6 +6,7 @@ import type {
   JoinPayload,
   Peer,
   PeerLeftPayload,
+  PeerScreenPayload,
   PeerStatePayload,
   SignalData,
 } from "@/types";
@@ -15,6 +16,7 @@ interface Handlers {
   onSignal: (from: string, data: SignalData) => void;
   onPeerState: (payload: PeerStatePayload) => void;
   onPeerLeft: (payload: PeerLeftPayload) => void;
+  onPeerScreen: (payload: PeerScreenPayload) => void;
   onChat: (message: ChatPayload) => void;
 }
 
@@ -23,6 +25,8 @@ export interface Signaling {
   emitSignal: (to: string, data: SignalData) => void;
   emitState: (patch: { audio?: boolean; video?: boolean }) => void;
   emitChat: (text: string) => void;
+  /** Announce (streamId) or stop (null) a screen share to the room. */
+  emitScreen: (streamId: string | null) => void;
   /** Notify peers and disconnect (on leave/unmount). */
   leave: () => void;
   /** Our own socket id (once connected). */
@@ -44,6 +48,7 @@ export function useSignaling(handlers: Handlers): Signaling {
       emitSignal: (to, data) => socketRef.current?.emit("signal", { to, data }),
       emitState: (patch) => socketRef.current?.emit("state", patch),
       emitChat: (text) => socketRef.current?.emit("chat", { text }),
+      emitScreen: (streamId) => socketRef.current?.emit("screen", { streamId }),
       leave: () => {
         socketRef.current?.emit("leave");
         socketRef.current?.disconnect();
@@ -60,6 +65,7 @@ export function useSignaling(handlers: Handlers): Signaling {
     socket.on("signal", ({ from, data }) => handlersRef.current.onSignal(from, data));
     socket.on("peer-state", (p) => handlersRef.current.onPeerState(p));
     socket.on("peer-left", (p) => handlersRef.current.onPeerLeft(p));
+    socket.on("peer-screen", (p) => handlersRef.current.onPeerScreen(p));
     socket.on("chat", (m) => handlersRef.current.onChat(m));
 
     return () => {

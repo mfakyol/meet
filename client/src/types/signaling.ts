@@ -41,6 +41,12 @@ export interface PeerLeftPayload {
   id: string;
 }
 
+// Screen share announcement: which MediaStream id a peer is sharing (null = stop).
+export interface PeerScreenPayload {
+  id: string;
+  screenId: string | null;
+}
+
 export interface ChatPayload {
   from: string;
   name: string;
@@ -54,6 +60,7 @@ export interface ServerToClientEvents {
   signal: (message: SignalMessage) => void;
   "peer-state": (payload: PeerStatePayload) => void;
   "peer-left": (payload: PeerLeftPayload) => void;
+  "peer-screen": (payload: PeerScreenPayload) => void;
   chat: (message: ChatPayload) => void;
 }
 
@@ -62,5 +69,6 @@ export interface ClientToServerEvents {
   signal: (payload: { to: string; data: SignalData }) => void;
   state: (payload: { audio?: boolean; video?: boolean }) => void;
   chat: (payload: { text: string }) => void;
+  screen: (payload: { streamId: string | null }) => void;
   leave: () => void;
 }

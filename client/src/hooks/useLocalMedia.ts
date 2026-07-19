@@ -5,12 +5,11 @@ interface Options {
   onMediaState: (patch: { audio?: boolean; video?: boolean }) => void;
   /**
    * Screen-share started (screenTrack set) or stopped (null). The peer layer
-   * swaps/adds the outgoing video track; `cameraTrack` is what to restore on stop.
+   * sends/removes the screen as a separate track; the camera is left untouched.
    */
   onSetScreen: (
     screenTrack: MediaStreamTrack | null,
-    screenStream: MediaStream | null,
-    cameraTrack: MediaStreamTrack | null
+    screenStream: MediaStream | null
   ) => void;
   /** Surface a user-facing error (media denied, …). */
   onError: (message: string) => void;
@@ -18,6 +17,8 @@ interface Options {
 
 export interface LocalMedia {
   localStream: MediaStream | null;
+  /** The screen we're sharing (own preview tile), or null. */
+  localScreen: MediaStream | null;
   micOn: boolean;
   camOn: boolean;
   sharing: boolean;
@@ -42,16 +43,18 @@ export function useLocalMedia(options: Options): LocalMedia {
   optRef.current = options;
 
   const streamRef = useRef<MediaStream | null>(null);
-  const cameraTrackRef = useRef<MediaStreamTrack | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const sharingRef = useRef(false);
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [sharing, setSharing] = useState(false);
   const apiRef =
-    useRef<Omit<LocalMedia, "localStream" | "micOn" | "camOn" | "sharing"> | undefined>(undefined);
+    useRef<
+      Omit<LocalMedia, "localStream" | "localScreen" | "micOn" | "camOn" | "sharing"> | undefined
+    >(undefined);
 
   if (!apiRef.current) {
     async function acquire(): Promise<MediaStream | null> {
@@ -62,7 +65,6 @@ export function useLocalMedia(options: Options): LocalMedia {
         optRef.current.onError("Kamera/mikrofon açılamadı — sadece izleme modunda katıldın.");
       }
       streamRef.current = stream;
-      cameraTrackRef.current = stream?.getVideoTracks()[0] ?? null;
       setLocalStream(stream);
       setMicOn(!!stream?.getAudioTracks().length);
       setCamOn(!!stream?.getVideoTracks().length);
@@ -94,9 +96,8 @@ export function useLocalMedia(options: Options): LocalMedia {
     function stopShare(): void {
       screenStreamRef.current?.getTracks().forEach((t) => t.stop());
       screenStreamRef.current = null;
-      optRef.current.onSetScreen(null, null, cameraTrackRef.current);
-      // Restore the camera preview (or nothing, if watch-only).
-      setLocalStream(streamRef.current);
+      optRef.current.onSetScreen(null, null);
+      setLocalScreen(null);
       sharingRef.current = false;
       setSharing(false);
     }
@@ -116,9 +117,9 @@ export function useLocalMedia(options: Options): LocalMedia {
       const screenTrack = screen.getVideoTracks()[0];
       if (!screenTrack) return;
       screenStreamRef.current = screen;
-      optRef.current.onSetScreen(screenTrack, screen, cameraTrackRef.current);
-      // Local preview shows the shared screen.
-      setLocalStream(screen);
+      // Screen is a separate track — the camera preview stays as-is.
+      optRef.current.onSetScreen(screenTrack, screen);
+      setLocalScreen(screen);
       sharingRef.current = true;
       setSharing(true);
       // Browser's own "stop sharing" button.
@@ -133,5 +134,5 @@ export function useLocalMedia(options: Options): LocalMedia {
     apiRef.current = { streamRef, getSharedScreen, acquire, toggleMic, toggleCam, toggleShare, cleanup };
   }
 
-  return { localStream, micOn, camOn, sharing, ...apiRef.current };
+  return { localStream, localScreen, micOn, camOn, sharing, ...apiRef.current };
 }

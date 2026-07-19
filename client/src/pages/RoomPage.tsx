@@ -40,7 +40,7 @@ function Room({
   const [chatOpen, setChatOpen] = useState(false);
 
   const total = room.peers.length + 1;
-  const cols = gridCols(total);
+  const cols = gridCols(room.tiles.length);
 
   return (
     <Flex direction="column" h="100%">
@@ -78,22 +78,16 @@ function Room({
         <Box component="main" p="md" style={{ flex: 1, minWidth: 0, overflow: "auto" }}>
           <Box mx="auto" maw={cols >= 3 ? "100%" : 1100}>
             <SimpleGrid cols={cols} spacing="sm">
-              <VideoTile
-                stream={room.localStream}
-                name={name}
-                self
-                muted
-                audioOff={!room.micOn}
-                videoOff={!room.camOn && !room.sharing}
-                sharing={room.sharing}
-              />
-              {room.peers.map((p) => (
+              {room.tiles.map((t) => (
                 <VideoTile
-                  key={p.id}
-                  stream={p.stream}
-                  name={p.name}
-                  audioOff={!p.audio}
-                  videoOff={!p.video}
+                  key={t.key}
+                  stream={t.stream}
+                  name={t.name}
+                  self={t.self}
+                  muted={t.muted}
+                  audioOff={t.audioOff}
+                  videoOff={t.videoOff}
+                  sharing={t.screen}
                 />
               ))}
             </SimpleGrid>
