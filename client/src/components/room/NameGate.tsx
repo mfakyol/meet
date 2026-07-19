@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Button, Center, Paper, Stack, Text, TextInput, Title } from "@mantine/core";
 
 interface Props {
   roomId: string;
@@ -19,28 +20,37 @@ export function NameGate({ roomId, onJoin }: Props) {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center px-4">
-      <form
-        onSubmit={submit}
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-white/10 bg-slate-900/60 p-6 text-center"
-      >
-        <h1 className="text-lg font-semibold">Odaya katıl</h1>
-        <p className="text-sm text-slate-400">Oda: {roomId}</p>
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Görünen adın"
-          className="w-full rounded-lg border border-white/10 bg-slate-800 px-3 py-2.5 text-center outline-none focus:border-indigo-500"
-        />
-        <button
-          type="submit"
-          disabled={!name.trim()}
-          className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 font-semibold text-white disabled:opacity-40"
-        >
-          Katıl
-        </button>
-      </form>
-    </div>
+    <Center h="100%" p="md">
+      <Paper withBorder radius="lg" p="lg" w="100%" maw={380}>
+        <form onSubmit={submit}>
+          <Stack gap="md" align="center">
+            <Title order={2} size="h4">
+              Odaya katıl
+            </Title>
+            <Text c="dimmed" size="sm">
+              Oda: {roomId}
+            </Text>
+            <TextInput
+              w="100%"
+              data-autofocus
+              autoFocus
+              placeholder="Görünen adın"
+              styles={{ input: { textAlign: "center" } }}
+              value={name}
+              onChange={(e) => setName(e.currentTarget.value)}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="gradient"
+              gradient={{ from: "indigo", to: "violet", deg: 90 }}
+              disabled={!name.trim()}
+            >
+              Katıl
+            </Button>
+          </Stack>
+        </form>
+      </Paper>
+    </Center>
   );
 }

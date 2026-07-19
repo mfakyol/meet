@@ -1,23 +1,7 @@
-@import "tailwindcss";
-
-:root {
-  color-scheme: dark;
-}
-
+/* Mantine's baseline handles the reset, body colors, and box-sizing. We only
+   need the full-height chain so the app can lay out with flexbox. */
 html,
 body,
 #root {
   height: 100%;
-}
-
-body {
-  margin: 0;
-  background: #0b0d12;
-  color: #e8eaed;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-* {
-  box-sizing: border-box;
 }

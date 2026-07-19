@@ -1,0 +1,38 @@
+// Note: use literal `rem` values here — Dart Sass has a native `rem()` math
+// function that collides with Mantine's PostCSS `rem()` helper inside .scss.
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border-inline-start: 1px solid var(--mantine-color-dark-4);
+
+  // Mantine's "sm" breakpoint (48em).
+  @media (min-width: 48em) {
+    width: 20rem;
+  }
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+
+  &[data-mine="true"] {
+    align-items: flex-end;
+  }
+}
+
+.bubble {
+  display: inline-block;
+  max-width: 85%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--mantine-radius-lg);
+  font-size: var(--mantine-font-size-sm);
+  word-break: break-word;
+  background-color: var(--mantine-color-dark-5);
+  color: var(--mantine-color-gray-1);
+
+  &[data-mine="true"] {
+    background-color: var(--mantine-color-violet-6);
+    color: var(--mantine-color-white);
+  }
+}

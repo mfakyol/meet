@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
+import { AspectRatio, Avatar, Paper, Text } from "@mantine/core";
 import { IconMicrophoneOff } from "@tabler/icons-react";
+import classes from "./VideoTile.module.scss";
 
 interface Props {
   stream: MediaStream | null;
@@ -35,34 +37,37 @@ export function VideoTile({
   }, [stream]);
 
   return (
-    <div className="relative aspect-video overflow-hidden rounded-xl bg-slate-800/60 ring-1 ring-white/5">
-      <video
-        ref={ref}
-        autoPlay
-        playsInline
-        muted={muted}
-        className={`h-full w-full bg-slate-900 ${
-          sharing ? "object-contain" : "object-cover"
-        } ${videoOff ? "hidden" : ""} ${self && !sharing ? "-scale-x-100" : ""}`}
-      />
+    <Paper radius="md" withBorder className={classes.tile}>
+      <AspectRatio ratio={16 / 9}>
+        <video
+          ref={ref}
+          autoPlay
+          playsInline
+          muted={muted}
+          className={classes.video}
+          data-sharing={sharing ? "true" : undefined}
+          data-mirror={self && !sharing ? "true" : undefined}
+          data-hidden={videoOff ? "true" : undefined}
+        />
 
-      {videoOff && (
-        <div className="flex h-full w-full items-center justify-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-500/20 text-2xl font-semibold text-indigo-200">
-            {initials(name)}
+        {videoOff && (
+          <div className={classes.placeholder}>
+            <Avatar size={80} radius="xl" color="violet" variant="light">
+              {initials(name)}
+            </Avatar>
           </div>
-        </div>
-      )}
-
-      <div className="absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 text-sm">
-        {audioOff && (
-          <IconMicrophoneOff size={16} className="shrink-0 text-red-400" aria-label="Mikrofon kapalı" />
         )}
-        <span className="truncate font-medium text-white">
+      </AspectRatio>
+
+      <div className={classes.caption}>
+        {audioOff && (
+          <IconMicrophoneOff size={16} color="var(--mantine-color-red-4)" aria-label="Mikrofon kapalı" />
+        )}
+        <Text size="sm" fw={500} c="white" truncate>
           {name}
           {self && " (sen)"}
-        </span>
+        </Text>
       </div>
-    </div>
+    </Paper>
   );
 }

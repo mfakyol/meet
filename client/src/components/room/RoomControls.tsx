@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { ActionIcon, Group, Tooltip } from "@mantine/core";
 import {
   IconMicrophone,
   IconMicrophoneOff,
@@ -9,31 +9,34 @@ import {
   IconMessage,
   IconPhoneOff,
 } from "@tabler/icons-react";
+import type { ReactNode } from "react";
 
 function ControlButton({
   onClick,
-  active,
-  danger,
   title,
+  color,
+  variant = "default",
   children,
 }: {
   onClick: () => void;
-  active?: boolean;
-  danger?: boolean;
   title: string;
+  color?: string;
+  variant?: string;
   children: ReactNode;
 }) {
-  const base =
-    "flex h-12 w-12 items-center justify-center rounded-full text-xl transition select-none";
-  const cls = danger
-    ? "bg-red-600 text-white hover:bg-red-500"
-    : active
-      ? "bg-white/15 text-white hover:bg-white/25"
-      : "bg-red-500/90 text-white hover:bg-red-500";
   return (
-    <button onClick={onClick} title={title} className={`${base} ${cls}`}>
-      {children}
-    </button>
+    <Tooltip label={title} withArrow>
+      <ActionIcon
+        onClick={onClick}
+        aria-label={title}
+        size={52}
+        radius="xl"
+        variant={variant}
+        color={color}
+      >
+        {children}
+      </ActionIcon>
+    </Tooltip>
   );
 }
 
@@ -49,7 +52,10 @@ interface Props {
   onLeave: () => void;
 }
 
-// The bottom control bar: mic, camera, screen-share, chat, leave.
+const ICON = 24;
+
+// The bottom control bar: mic, camera, screen-share, chat, leave. A control that
+// is "off" (mic/cam muted) is shown filled-red to read as an alert state.
 export function RoomControls({
   micOn,
   camOn,
@@ -62,22 +68,46 @@ export function RoomControls({
   onLeave,
 }: Props) {
   return (
-    <footer className="flex items-center justify-center gap-3 border-t border-white/10 px-4 py-4">
-      <ControlButton onClick={onToggleMic} active={micOn} title={micOn ? "Mikrofonu kapat" : "Mikrofonu aç"}>
-        {micOn ? <IconMicrophone size={22} /> : <IconMicrophoneOff size={22} />}
+    <Group justify="center" gap="sm" p="md" style={{ borderTop: "1px solid var(--mantine-color-dark-4)" }}>
+      <ControlButton
+        onClick={onToggleMic}
+        title={micOn ? "Mikrofonu kapat" : "Mikrofonu aç"}
+        variant={micOn ? "default" : "filled"}
+        color={micOn ? undefined : "red"}
+      >
+        {micOn ? <IconMicrophone size={ICON} /> : <IconMicrophoneOff size={ICON} />}
       </ControlButton>
-      <ControlButton onClick={onToggleCam} active={camOn} title={camOn ? "Kamerayı kapat" : "Kamerayı aç"}>
-        {camOn ? <IconVideo size={22} /> : <IconVideoOff size={22} />}
+
+      <ControlButton
+        onClick={onToggleCam}
+        title={camOn ? "Kamerayı kapat" : "Kamerayı aç"}
+        variant={camOn ? "default" : "filled"}
+        color={camOn ? undefined : "red"}
+      >
+        {camOn ? <IconVideo size={ICON} /> : <IconVideoOff size={ICON} />}
       </ControlButton>
-      <ControlButton onClick={onToggleShare} active={!sharing} title={sharing ? "Paylaşımı durdur" : "Ekranı paylaş"}>
-        {sharing ? <IconScreenShareOff size={22} /> : <IconScreenShare size={22} />}
+
+      <ControlButton
+        onClick={onToggleShare}
+        title={sharing ? "Paylaşımı durdur" : "Ekranı paylaş"}
+        variant={sharing ? "light" : "default"}
+        color={sharing ? "violet" : undefined}
+      >
+        {sharing ? <IconScreenShareOff size={ICON} /> : <IconScreenShare size={ICON} />}
       </ControlButton>
-      <ControlButton onClick={onToggleChat} active={!chatOpen} title="Sohbet">
-        <IconMessage size={22} />
+
+      <ControlButton
+        onClick={onToggleChat}
+        title="Sohbet"
+        variant={chatOpen ? "light" : "default"}
+        color={chatOpen ? "violet" : undefined}
+      >
+        <IconMessage size={ICON} />
       </ControlButton>
-      <ControlButton onClick={onLeave} danger title="Görüşmeden ayrıl">
-        <IconPhoneOff size={22} />
+
+      <ControlButton onClick={onLeave} title="Görüşmeden ayrıl" variant="filled" color="red">
+        <IconPhoneOff size={ICON} />
       </ControlButton>
-    </footer>
+    </Group>
   );
 }

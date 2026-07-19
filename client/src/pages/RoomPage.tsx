@@ -1,5 +1,17 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  Alert,
+  Box,
+  Button,
+  CopyButton,
+  Flex,
+  Group,
+  SimpleGrid,
+  Stack,
+  Text,
+} from "@mantine/core";
+import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useRoom } from "@/hooks/useRoom";
 import { VideoTile } from "@/components/room/VideoTile";
 import { ChatPanel } from "@/components/room/ChatPanel";
@@ -13,6 +25,8 @@ function gridCols(total: number): number {
   return 4;
 }
 
+const BORDER = "1px solid var(--mantine-color-dark-4)";
+
 function Room({
   roomId,
   name,
@@ -24,70 +38,67 @@ function Room({
 }) {
   const room = useRoom(roomId, name);
   const [chatOpen, setChatOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const total = room.peers.length + 1;
   const cols = gridCols(total);
 
-  function copyLink() {
-    void navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
-
   return (
-    <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-        <div className="min-w-0">
-          <div className="truncate font-semibold">Oda: {roomId}</div>
-          <div className="text-xs text-slate-400">
+    <Flex direction="column" h="100%">
+      <Group justify="space-between" gap="sm" p="sm" style={{ borderBottom: BORDER }}>
+        <Stack gap={0} style={{ minWidth: 0 }}>
+          <Text fw={600} truncate>
+            Oda: {roomId}
+          </Text>
+          <Text size="xs" c="dimmed">
             {total} katılımcı
             {room.status === "connecting" && " · bağlanıyor…"}
-          </div>
-        </div>
-        <button
-          onClick={copyLink}
-          className="shrink-0 rounded-lg border border-white/15 px-3 py-1.5 text-sm hover:bg-white/5"
-        >
-          {copied ? "Kopyalandı ✓" : "Linki kopyala"}
-        </button>
-      </header>
+          </Text>
+        </Stack>
+        <CopyButton value={window.location.href} timeout={1500}>
+          {({ copied, copy }) => (
+            <Button
+              variant="default"
+              size="xs"
+              onClick={copy}
+              leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+            >
+              {copied ? "Kopyalandı" : "Linki kopyala"}
+            </Button>
+          )}
+        </CopyButton>
+      </Group>
 
       {room.error && (
-        <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-200">
+        <Alert color="yellow" radius={0} py="xs">
           {room.error}
-        </div>
+        </Alert>
       )}
 
-      <div className="flex min-h-0 flex-1">
-        <main className="min-w-0 flex-1 overflow-auto p-4">
-          <div
-            className="mx-auto grid gap-3"
-            style={{
-              gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-              maxWidth: cols >= 3 ? "100%" : "1100px",
-            }}
-          >
-            <VideoTile
-              stream={room.localStream}
-              name={name}
-              self
-              muted
-              audioOff={!room.micOn}
-              videoOff={!room.camOn && !room.sharing}
-              sharing={room.sharing}
-            />
-            {room.peers.map((p) => (
+      <Flex mih={0} style={{ flex: 1 }}>
+        <Box component="main" p="md" style={{ flex: 1, minWidth: 0, overflow: "auto" }}>
+          <Box mx="auto" maw={cols >= 3 ? "100%" : 1100}>
+            <SimpleGrid cols={cols} spacing="sm">
               <VideoTile
-                key={p.id}
-                stream={p.stream}
-                name={p.name}
-                audioOff={!p.audio}
-                videoOff={!p.video}
+                stream={room.localStream}
+                name={name}
+                self
+                muted
+                audioOff={!room.micOn}
+                videoOff={!room.camOn && !room.sharing}
+                sharing={room.sharing}
               />
-            ))}
-          </div>
-        </main>
+              {room.peers.map((p) => (
+                <VideoTile
+                  key={p.id}
+                  stream={p.stream}
+                  name={p.name}
+                  audioOff={!p.audio}
+                  videoOff={!p.video}
+                />
+              ))}
+            </SimpleGrid>
+          </Box>
+        </Box>
 
         {chatOpen && (
           <ChatPanel
@@ -96,7 +107,7 @@ function Room({
             onClose={() => setChatOpen(false)}
           />
         )}
-      </div>
+      </Flex>
 
       <RoomControls
         micOn={room.micOn}
@@ -109,7 +120,7 @@ function Room({
         onToggleChat={() => setChatOpen((v) => !v)}
         onLeave={onLeave}
       />
-    </div>
+    </Flex>
   );
 }
 
