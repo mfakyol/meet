@@ -32,11 +32,16 @@ Notes unique to **this** repo. General standards live in the sibling docs
 - `join` `{ roomId, name, audio, video }` → ack `{ ok, selfId, peers }`; also
   emits `peer-joined` to the room.
 - `signal` `{ to, data }` → relayed to `to` as `{ from, data }` (SDP offer/answer
-  or ICE candidate). **Relay integrity gap:** currently any socket can target any
-  `to`; should be restricted to same-room peers (see security doc).
+  or ICE candidate). Restricted to same-room peers (relay integrity, enforced
+  server-side).
 - `state` `{ audio, video }` → broadcast as `peer-state` (mic/cam indicators).
 - `chat` `{ text }` → broadcast as `chat { from, name, text, ts }`. Ephemeral,
   never persisted.
+- `screen` `{ streamId | null }` → broadcast as `peer-screen { id, screenId }`.
+  The screen share travels as a **separate** track/stream (not replacing the
+  camera); `screenId` is the MediaStream id so receivers can tell it from the
+  camera and render it as its own tile. Works without a camera. Tiles are
+  ordered screens-first, self-camera-last.
 - `leave` / `disconnect` → `peer-left { id }`; empty rooms are deleted.
 
 ## Client structure (current)
