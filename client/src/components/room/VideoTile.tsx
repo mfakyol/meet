@@ -52,7 +52,7 @@ export function VideoTile({
 
         {videoOff && (
           <div className={classes.placeholder}>
-            <Avatar size={80} radius="xl" color="Remoraid" variant="light">
+            <Avatar size={80} radius="xl" variant="light">
               {initials(name)}
             </Avatar>
           </div>

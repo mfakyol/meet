@@ -1,253 +1,89 @@
-import type { MantineThemeOverride } from "@mantine/core";
+import { createTheme, rem, type MantineColorsTuple } from "@mantine/core";
 
-// App-wide Mantine theme (dark, near-black palette with a custom "Remoraid"
-// green primary). Fonts (Open Sans, Roboto Mono) are loaded in index.html.
-export const theme: MantineThemeOverride = {
+// Basic shadcn-flavored theme: palette + typography + spacing/radius. (The full
+// shadcn build ships a CSS-variables resolver + per-component overrides — we
+// intentionally keep just the core theme here.)
+
+const zinc: MantineColorsTuple = ["#fafafa","#f4f4f5","#e4e4e7","#d4d4d8","#a1a1aa","#52525b","#3f3f46","#27272a","#18181b","#09090b","#71717A"];
+const slate: MantineColorsTuple = ["#f8fafc","#f1f5f9","#e2e8f0","#cbd5e1","#94a3b8","#475569","#334155","#1e293b","#0f172a","#020817","#64748B"];
+const gray: MantineColorsTuple = ["#f9fafb","#f3f4f6","#e5e7eb","#d1d5db","#9ca3af","#4b5563","#374151","#1f2937","#111827","#030712","#6B7280"];
+const neutral: MantineColorsTuple = ["#fafafa","#f5f5f5","#e5e5e5","#d4d4d4","#a3a3a3","#525252","#404040","#262626","#171717","#0a0a0a","#737373"];
+const stone: MantineColorsTuple = ["#fafaf9","#f5f5f4","#e7e5e4","#d6d3d1","#a8a29e","#57534e","#44403c","#292524","#1c1917","#0c0a09","#78716C"];
+const red: MantineColorsTuple = ["#FEF2F2","#FEE2E2","#FECACA","#FCA5A5","#F87171","#DC2626","#B91C1C","#991B1B","#7F1D1D","#450A0A","#EF4444"];
+const rose: MantineColorsTuple = ["#fff1f2","#ffe4e6","#fecdd3","#fda4af","#fb7185","#e11d48","#be123c","#9f1239","#881337","#4c0519","#F43F5E"];
+const orange: MantineColorsTuple = ["#fff7ed","#ffedd5","#fed7aa","#fdba74","#fb923c","#f97316","#ea580c","#9a3412","#7c2d12","#431407","#F97316"];
+const amber: MantineColorsTuple = ["#FFFBEB","#FEF3C7","#FDE68A","#FCD34D","#FBBF24","#f59e0b","#D97706","#92400E","#78350F","#451A03","#F59E0B"];
+const yellow: MantineColorsTuple = ["#fefce8","#fef9c3","#fef08a","#fde047","#facc15","#ca8a04","#a16207","#854d0e","#713f12","#3f2c06","#F59E0B"];
+const lime: MantineColorsTuple = ["#f7fee7","#ecfccb","#d9f99d","#bef264","#a3e635","#4d7c0f","#3f6212","#365314","#1a2e05","#0f1903","#84CC16"];
+const green: MantineColorsTuple = ["#F0FDF4","#DCFCE7","#BBF7D0","#86EFAC","#4ADE80","#22c55e","#16A34A","#166534","#14532D","#052E16","#10B981"];
+const emerald: MantineColorsTuple = ["#ecfdf5","#d1fae5","#a7f3d0","#6ee7b7","#34d399","#059669","#047857","#065f46","#064e3b","#022c22","#10B981"];
+const teal: MantineColorsTuple = ["#f0fdfa","#ccfbf1","#99f6e4","#5eead4","#2dd4bf","#0d9488","#0f766e","#115e59","#134e4a","#042f2e","#14B8A6"];
+const cyan: MantineColorsTuple = ["#ecfeff","#cffafe","#a5f3fc","#67e8f9","#22d3ee","#0891b2","#0e7490","#155e75","#164e63","#083344","#06B6D4"];
+const sky: MantineColorsTuple = ["#f0f9ff","#e0f2fe","#bae6fd","#7dd3fc","#38bdf8","#0284c7","#0369a1","#075985","#0c4a6e","#082f49","#0EA5E9"];
+const blue: MantineColorsTuple = ["#eff6ff","#dbeafe","#bfdbfe","#93c5fd","#60a5fa","#3b82f6","#2563eb","#1e40af","#1e3a8a","#172554","#3B82F6"];
+const indigo: MantineColorsTuple = ["#eef2ff","#e0e7ff","#c7d2fe","#a5b4fc","#818cf8","#4f46e5","#4338ca","#3730a3","#312e81","#1e1b4b","#6366F1"];
+const violet: MantineColorsTuple = ["#f5f3ff","#ede9fe","#ddd6fe","#c4b5fd","#a78bfa","#7c3aed","#6d28d9","#5b21b6","#4c1d95","#1e1b4b","#8B5CF6"];
+const purple: MantineColorsTuple = ["#faf5ff","#f3e8ff","#e9d5ff","#d8b4fe","#c084fc","#9333ea","#7e22ce","#6b21a8","#581c87","#2e1065","#A855F7"];
+const fuchsia: MantineColorsTuple = ["#fdf4ff","#fae8ff","#f5d0fe","#f0abfc","#e879f9","#c026d3","#a21caf","#86198f","#701a75","#4a044e","#D946EF"];
+const pink: MantineColorsTuple = ["#fdf2f8","#fce7f3","#fbcfe8","#f9a8d4","#f472b6","#db2777","#be185d","#9d174d","#831843","#500724","#EC4899"];
+
+export const theme = createTheme({
   colors: {
-    dark: [
-      "#fafcff",
-      "#cad5e8",
-      "#8697b5",
-      "#4c5d7d",
-      "#222833",
-      "#222938",
-      "#0b0f14",
-      "#0b0f14",
-      "#030405",
-      "#000000",
-    ],
-    gray: [
-      "#e3e7f1",
-      "#d8ddeb",
-      "#ced4e5",
-      "#c3cadf",
-      "#b8c1d9",
-      "#b8c1d9",
-      "#7b8cb8",
-      "#4b5c8b",
-      "#2a334d",
-      "#090b10",
-    ],
-    blue: [
-      "#ddf4ff",
-      "#b6e3ff",
-      "#80ccff",
-      "#54aeff",
-      "#218bff",
-      "#0969da",
-      "#0550ae",
-      "#033d8b",
-      "#0a3069",
-      "#002155",
-    ],
-    green: [
-      "#dafbe1",
-      "#aceebb",
-      "#6fdd8b",
-      "#4ac26b",
-      "#2da44e",
-      "#1a7f37",
-      "#116329",
-      "#044f1e",
-      "#003d16",
-      "#002d11",
-    ],
-    yellow: [
-      "#fff8c5",
-      "#fae17d",
-      "#eac54f",
-      "#d4a72c",
-      "#bf8700",
-      "#9a6700",
-      "#7d4e00",
-      "#633c01",
-      "#4d2d00",
-      "#3b2300",
-    ],
-    orange: [
-      "#fff1e5",
-      "#ffd8b5",
-      "#ffb77c",
-      "#fb8f44",
-      "#e16f24",
-      "#bc4c00",
-      "#953800",
-      "#762c00",
-      "#5c2200",
-      "#471700",
-    ],
-    red: [
-      "#fff5f5",
-      "#ffe3e3",
-      "#ffc9c9",
-      "#ffa8a8",
-      "#ff8787",
-      "#ff6b6b",
-      "#fa5252",
-      "#f03e3e",
-      "#e03131",
-      "#c92a2a",
-    ],
-    pink: [
-      "#fff0f6",
-      "#ffdeeb",
-      "#fcc2d7",
-      "#faa2c1",
-      "#f783ac",
-      "#f06595",
-      "#e64980",
-      "#d6336c",
-      "#c2255c",
-      "#a61e4d",
-    ],
-    grape: [
-      "#f8f0fc",
-      "#f3d9fa",
-      "#eebefa",
-      "#e599f7",
-      "#da77f2",
-      "#cc5de8",
-      "#be4bdb",
-      "#ae3ec9",
-      "#9c36b5",
-      "#862e9c",
-    ],
-    violet: [
-      "#f3f0ff",
-      "#e5dbff",
-      "#d0bfff",
-      "#b197fc",
-      "#9775fa",
-      "#845ef7",
-      "#7950f2",
-      "#7048e8",
-      "#6741d9",
-      "#5f3dc4",
-    ],
-    indigo: [
-      "#edf2ff",
-      "#dbe4ff",
-      "#bac8ff",
-      "#91a7ff",
-      "#748ffc",
-      "#5c7cfa",
-      "#4c6ef5",
-      "#4263eb",
-      "#3b5bdb",
-      "#364fc7",
-    ],
-    cyan: [
-      "#e3fafc",
-      "#c5f6fa",
-      "#99e9f2",
-      "#66d9e8",
-      "#3bc9db",
-      "#22b8cf",
-      "#15aabf",
-      "#1098ad",
-      "#0c8599",
-      "#0b7285",
-    ],
-    teal: [
-      "#e6fcf5",
-      "#c3fae8",
-      "#96f2d7",
-      "#63e6be",
-      "#38d9a9",
-      "#20c997",
-      "#12b886",
-      "#0ca678",
-      "#099268",
-      "#087f5b",
-    ],
-    lime: [
-      "#f4fce3",
-      "#e9fac8",
-      "#d8f5a2",
-      "#c0eb75",
-      "#a9e34b",
-      "#94d82d",
-      "#82c91e",
-      "#74b816",
-      "#66a80f",
-      "#5c940d",
-    ],
-    Remoraid: [
-      "#dcf2de",
-      "#c7eccc",
-      "#b2e6b9",
-      "#9de1a6",
-      "#88db93",
-      "#88db93",
-      "#5fc26d",
-      "#479454",
-      "#296133",
-      "#19361d",
-    ],
+    slate, gray, zinc, neutral, stone,
+    red, rose, orange, amber, yellow,
+    lime, green, emerald, teal, cyan, sky, blue,
+    indigo, violet, purple, fuchsia, pink,
+    primary: zinc,
+    secondary: zinc,
+    dark: zinc,
+    error: red,
+    success: green,
+    info: blue,
+    warning: amber,
   },
-  primaryColor: "Remoraid",
-  primaryShade: {
-    light: 6,
-    dark: 5,
-  },
-  white: "#ffffff",
-  black: "#24292f",
+  primaryColor: "primary",
+  primaryShade: { light: 8, dark: 0 },
   autoContrast: true,
   luminanceThreshold: 0.3,
-  fontFamily: "Open Sans",
-  fontFamilyMonospace: "Roboto Mono",
-  headings: {
-    fontFamily: "Open Sans",
-    fontWeight: "500",
-    sizes: {
-      h1: { fontSize: "3.125rem", lineHeight: "1.3", fontWeight: "700" },
-      h2: { fontSize: "1.625rem", lineHeight: "1.35", fontWeight: "0" },
-      h3: { fontSize: "1.375rem", lineHeight: "1.4", fontWeight: "0" },
-      h4: { fontSize: "1.125rem", lineHeight: "1.45", fontWeight: "0" },
-      h5: { fontSize: "1rem", lineHeight: "1.5", fontWeight: "0" },
-      h6: { fontSize: "0.875rem", lineHeight: "1.5", fontWeight: "0" },
-    },
-  },
-  scale: 1,
+  focusRing: "never",
+  cursorType: "pointer",
+  fontFamily: "Geist",
   radius: {
-    xs: "0.325rem",
-    sm: "0.75rem",
-    md: "0.7rem",
-    lg: "1.2rem",
-    xl: "2.4rem",
+    xs: rem("6px"),
+    sm: rem("8px"),
+    md: rem("12px"),
+    lg: rem("16px"),
+    xl: rem("24px"),
   },
+  defaultRadius: "sm",
   spacing: {
-    xs: "0.525rem",
-    sm: "0.65rem",
-    md: "0.9rem",
-    lg: "1.35rem",
-    xl: "2.2rem",
+    xs: rem("10px"),
+    sm: rem("12px"),
+    md: rem("16px"),
+    lg: rem("20px"),
+    xl: rem("24px"),
   },
-  defaultRadius: "md",
-  breakpoints: {
-    xs: "36em",
-    sm: "48em",
-    md: "62em",
-    lg: "75em",
-    xl: "88em",
+  fontSizes: {
+    xs: rem("12px"),
+    sm: rem("14px"),
+    md: rem("16px"),
+    lg: rem("18px"),
+    xl: rem("20px"),
   },
-  fontSmoothing: true,
-  respectReducedMotion: false,
-  focusRing: "auto",
-  cursorType: "default",
-  components: {
-    Input: {
-      defaultProps: {
-        variant: "default",
-        radius: "xl",
-      },
-      styles: {},
-    },
-    Card: {
-      defaultProps: {
-        withBorder: true,
-      },
-      styles: {},
+  headings: {
+    fontFamily: "Geist",
+    sizes: {
+      h1: { fontSize: rem("36px"), lineHeight: rem("44px"), fontWeight: "600" },
+      h2: { fontSize: rem("30px"), lineHeight: rem("38px"), fontWeight: "600" },
+      h3: { fontSize: rem("24px"), lineHeight: rem("32px"), fontWeight: "600" },
+      h4: { fontSize: rem("20px"), lineHeight: rem("30px"), fontWeight: "600" },
     },
   },
-};
+  shadows: {
+    xs: "0 1px 2px rgba(0, 0, 0, 0.05)",
+    sm: "0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)",
+    md: "0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)",
+    lg: "0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)",
+    xl: "0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04)",
+  },
+});
