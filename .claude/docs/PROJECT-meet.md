@@ -51,6 +51,9 @@ Notes unique to **this** repo. General standards live in the sibling docs
   - `hooks/usePeerConnections.ts` — the mesh of `RTCPeerConnection`s, ICE buffering,
     offer/answer, track replacement (stable imperative handle, no React churn).
   - `hooks/useSignaling.ts` — the socket lifecycle + typed emit/on.
+  - `hooks/useMediaDevices.ts` — enumerate cameras/mics/speakers (device picker).
+    Switching a device swaps the track via `replaceTrack` (no renegotiation);
+    speaker output uses `HTMLMediaElement.setSinkId` (feature-detected).
 - `lib/ice.ts` — STUN/TURN ICE config (`VITE_TURN_*`); `lib/socket.ts` — typed
   socket.io client factory.
 - `types/` mirrors the server signaling protocol (`signaling.ts` + `room.ts`
