@@ -5,6 +5,8 @@ import type { SignalData } from "@/types";
 interface Options {
   /** Local media whose tracks are attached to each new connection. */
   getLocalStream: () => MediaStream | null;
+  /** The screen currently being shared (so peers that join mid-share get it). */
+  getSharedScreen: () => { track: MediaStreamTrack; stream: MediaStream } | null;
   /** Send an SDP/ICE payload to a specific peer via signaling. */
   sendSignal: (to: string, data: SignalData) => void;
   /** A remote track arrived for a peer. */
@@ -16,8 +18,16 @@ export interface PeerConnections {
   ensure: (peerId: string, initiator: boolean) => RTCPeerConnection;
   /** Apply an inbound SDP offer/answer or ICE candidate from a peer. */
   handleSignal: (from: string, data: SignalData) => Promise<void>;
-  /** Swap the outgoing video track on every connection (camera ⇄ screen). */
-  replaceVideoTrack: (track: MediaStreamTrack | null) => void;
+  /**
+   * Start/stop screen sharing on every connection. Replaces the outgoing video
+   * track when one exists (camera present), otherwise adds/removes a track and
+   * renegotiates — so sharing works even without a camera.
+   */
+  setSharedScreen: (
+    screenTrack: MediaStreamTrack | null,
+    screenStream: MediaStream | null,
+    cameraTrack: MediaStreamTrack | null
+  ) => void;
   /** Tear down and forget one peer. */
   remove: (peerId: string) => void;
   /** Close every connection (on leave/unmount). */
@@ -36,6 +46,17 @@ export function usePeerConnections(options: Options): PeerConnections {
   const apiRef = useRef<PeerConnections | undefined>(undefined);
 
   if (!apiRef.current) {
+    async function makeOffer(pc: RTCPeerConnection, peerId: string): Promise<void> {
+      try {
+        // Avoid glare: only offer from a stable state.
+        if (pc.signalingState !== "stable") return;
+        await pc.setLocalDescription(await pc.createOffer());
+        optRef.current.sendSignal(peerId, { type: "offer", sdp: pc.localDescription?.sdp });
+      } catch (err) {
+        console.error("negotiation error", err);
+      }
+    }
+
     function ensure(peerId: string, initiator: boolean): RTCPeerConnection {
       const existing = pcs.current.get(peerId);
       if (existing) return existing;
@@ -43,24 +64,36 @@ export function usePeerConnections(options: Options): PeerConnections {
       const pc = new RTCPeerConnection({ iceServers: getIceServers() });
       pcs.current.set(peerId, pc);
 
+      // Attach local tracks. If we're mid-share, send the screen in place of the
+      // camera so a peer joining during a share sees the screen.
       const local = optRef.current.getLocalStream();
-      local?.getTracks().forEach((t) => pc.addTrack(t, local));
+      const shared = optRef.current.getSharedScreen();
+      local?.getTracks().forEach((t) => {
+        if (shared && t.kind === "video") return;
+        pc.addTrack(t, local);
+      });
+      if (shared) pc.addTrack(shared.track, shared.stream);
 
       pc.onicecandidate = (e) => {
         if (e.candidate) optRef.current.sendSignal(peerId, { candidate: e.candidate.toJSON() });
       };
       pc.ontrack = (e) => optRef.current.onRemoteStream(peerId, e.streams[0] ?? null);
 
-      // Only the initiator makes offers (newcomers initiate to existing peers),
-      // which avoids offer/answer glare.
       if (initiator) {
-        pc.onnegotiationneeded = async () => {
-          try {
-            await pc.setLocalDescription(await pc.createOffer());
-            optRef.current.sendSignal(peerId, { type: "offer", sdp: pc.localDescription?.sdp });
-          } catch (err) {
-            console.error("negotiation error", err);
+        // Newcomers initiate the first offer to existing peers (avoids glare),
+        // and re-offer on later renegotiation (e.g. screen share add/remove).
+        pc.onnegotiationneeded = () => void makeOffer(pc, peerId);
+      } else {
+        // Existing peers answer the newcomer's first offer rather than offering,
+        // so skip the negotiation triggered by adding the initial tracks — but
+        // still offer on later renegotiation (screen share).
+        let skippedInitial = false;
+        pc.onnegotiationneeded = () => {
+          if (!skippedInitial) {
+            skippedInitial = true;
+            return;
           }
+          void makeOffer(pc, peerId);
         };
       }
       return pc;
@@ -107,10 +140,23 @@ export function usePeerConnections(options: Options): PeerConnections {
       }
     }
 
-    function replaceVideoTrack(track: MediaStreamTrack | null): void {
+    function setSharedScreen(
+      screenTrack: MediaStreamTrack | null,
+      screenStream: MediaStream | null,
+      cameraTrack: MediaStreamTrack | null
+    ): void {
       pcs.current.forEach((pc) => {
-        const sender = pc.getSenders().find((s) => s.track?.kind === "video");
-        if (sender) void sender.replaceTrack(track);
+        const videoSender = pc.getSenders().find((s) => s.track?.kind === "video");
+        if (screenTrack) {
+          // Starting/updating a share.
+          if (videoSender) void videoSender.replaceTrack(screenTrack);
+          else if (screenStream) pc.addTrack(screenTrack, screenStream); // → renegotiation
+        } else {
+          // Stopping a share.
+          if (!videoSender) return;
+          if (cameraTrack) void videoSender.replaceTrack(cameraTrack);
+          else pc.removeTrack(videoSender); // → renegotiation
+        }
       });
     }
 
@@ -126,7 +172,7 @@ export function usePeerConnections(options: Options): PeerConnections {
       pendingIce.current.clear();
     }
 
-    apiRef.current = { ensure, handleSignal, replaceVideoTrack, remove, closeAll };
+    apiRef.current = { ensure, handleSignal, setSharedScreen, remove, closeAll };
   }
 
   return apiRef.current;

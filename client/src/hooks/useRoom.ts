@@ -68,6 +68,7 @@ export function useRoom(roomId: string, name: string): UseRoom {
 
   const pcs = usePeerConnections({
     getLocalStream: () => mediaRef.current?.streamRef.current ?? null,
+    getSharedScreen: () => mediaRef.current?.getSharedScreen() ?? null,
     sendSignal: (to, data) => signalingRef.current?.emitSignal(to, data),
     onRemoteStream: (id, stream) => upsertPeer(id, { stream }),
   });
@@ -90,7 +91,8 @@ export function useRoom(roomId: string, name: string): UseRoom {
 
   const media = useLocalMedia({
     onMediaState: (patch) => signaling.emitState(patch),
-    onReplaceVideoTrack: (track) => pcs.replaceVideoTrack(track),
+    onSetScreen: (screenTrack, screenStream, cameraTrack) =>
+      pcs.setSharedScreen(screenTrack, screenStream, cameraTrack),
     onError: setError,
   });
   mediaRef.current = media;
