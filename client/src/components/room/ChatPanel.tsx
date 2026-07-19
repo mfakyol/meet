@@ -58,7 +58,7 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
           {messages.map((m) => (
             <div key={m.id} className={classes.row} data-mine={m.mine ? "true" : undefined}>
               {!m.mine && (
-                <Text size="xs" fw={500} c="violet.3" mb={2}>
+                <Text size="xs" fw={500} c="dimmed" mb={2}>
                   {m.name}
                 </Text>
               )}
@@ -84,7 +84,7 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
             value={text}
             onChange={(e) => setText(e.currentTarget.value)}
           />
-          <ActionIcon type="submit" size={36} variant="filled" color="violet" disabled={!text.trim()} aria-label="Gönder">
+          <ActionIcon type="submit" size={36} variant="filled" disabled={!text.trim()} aria-label="Gönder">
             <IconSend size={18} />
           </ActionIcon>
         </Group>

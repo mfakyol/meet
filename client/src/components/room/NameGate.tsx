@@ -39,13 +39,7 @@ export function NameGate({ roomId, onJoin }: Props) {
               value={name}
               onChange={(e) => setName(e.currentTarget.value)}
             />
-            <Button
-              type="submit"
-              fullWidth
-              variant="gradient"
-              gradient={{ from: "indigo", to: "violet", deg: 90 }}
-              disabled={!name.trim()}
-            >
+            <Button type="submit" fullWidth variant="gradient" disabled={!name.trim()}>
               Katıl
             </Button>
           </Stack>

@@ -32,7 +32,7 @@
   color: var(--mantine-color-gray-1);
 
   &[data-mine="true"] {
-    background-color: var(--mantine-color-violet-6);
-    color: var(--mantine-color-white);
+    background-color: var(--mantine-primary-color-filled);
+    color: var(--mantine-primary-color-contrast);
   }
 }

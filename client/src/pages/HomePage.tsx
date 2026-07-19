@@ -42,12 +42,7 @@ export default function HomePage() {
       <Stack w="100%" maw={420} gap="lg">
         <Stack gap={4} align="center">
           <Title order={1} size={40}>
-            <Text
-              component="span"
-              inherit
-              variant="gradient"
-              gradient={{ from: "indigo", to: "violet", deg: 90 }}
-            >
+            <Text component="span" inherit variant="gradient">
               Meet
             </Text>
           </Title>
@@ -69,7 +64,6 @@ export default function HomePage() {
               fullWidth
               size="md"
               variant="gradient"
-              gradient={{ from: "indigo", to: "violet", deg: 90 }}
               disabled={!name.trim()}
               onClick={createRoom}
             >

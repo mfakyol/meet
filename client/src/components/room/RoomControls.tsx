@@ -91,7 +91,6 @@ export function RoomControls({
         onClick={onToggleShare}
         title={sharing ? "Paylaşımı durdur" : "Ekranı paylaş"}
         variant={sharing ? "light" : "default"}
-        color={sharing ? "violet" : undefined}
       >
         {sharing ? <IconScreenShareOff size={ICON} /> : <IconScreenShare size={ICON} />}
       </ControlButton>
@@ -100,7 +99,6 @@ export function RoomControls({
         onClick={onToggleChat}
         title="Sohbet"
         variant={chatOpen ? "light" : "default"}
-        color={chatOpen ? "violet" : undefined}
       >
         <IconMessage size={ICON} />
       </ControlButton>
