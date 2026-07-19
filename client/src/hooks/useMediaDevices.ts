@@ -16,16 +16,27 @@ export const canPickSpeaker =
   typeof HTMLMediaElement !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
 
 // Enumerates available input/output devices and keeps the list fresh on
-// hot-plug. Labels are only populated once media permission has been granted.
-export function useMediaDevices(): Devices & { refresh: () => void } {
+// hot-plug. Device ids/labels are hidden until media permission is granted, so
+// `refresh(true)` will prompt for permission (call it from a user gesture, e.g.
+// opening the device picker) to unlock the full list.
+export function useMediaDevices(): Devices & { refresh: (unlock?: boolean) => Promise<void> } {
   const [devices, setDevices] = useState<Devices>({ cameras: [], mics: [], speakers: [] });
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (unlock = false) => {
     try {
-      const list = await navigator.mediaDevices.enumerateDevices();
+      let list = await navigator.mediaDevices.enumerateDevices();
+      // Nothing usable yet (no permission) — ask for it, then re-enumerate.
+      if (unlock && !list.some((d) => d.deviceId)) {
+        const tmp =
+          (await navigator.mediaDevices.getUserMedia({ audio: true, video: true }).catch(() => null)) ??
+          (await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => null)) ??
+          (await navigator.mediaDevices.getUserMedia({ video: true }).catch(() => null));
+        tmp?.getTracks().forEach((t) => t.stop());
+        list = await navigator.mediaDevices.enumerateDevices();
+      }
       const pick = (kind: MediaDeviceKind, fallback: string): DeviceInfo[] =>
         list
-          .filter((d) => d.kind === kind)
+          .filter((d) => d.kind === kind && d.deviceId)
           .map((d, i) => ({ deviceId: d.deviceId, label: d.label || `${fallback} ${i + 1}` }));
       setDevices({
         cameras: pick("videoinput", "Kamera"),
@@ -33,14 +44,15 @@ export function useMediaDevices(): Devices & { refresh: () => void } {
         speakers: pick("audiooutput", "Hoparlör"),
       });
     } catch {
-      // enumerateDevices unavailable/blocked — leave lists empty
+      // enumerateDevices unavailable/blocked — leave lists as-is
     }
   }, []);
 
   useEffect(() => {
     void refresh();
-    navigator.mediaDevices.addEventListener("devicechange", refresh);
-    return () => navigator.mediaDevices.removeEventListener("devicechange", refresh);
+    const onChange = () => void refresh();
+    navigator.mediaDevices.addEventListener("devicechange", onChange);
+    return () => navigator.mediaDevices.removeEventListener("devicechange", onChange);
   }, [refresh]);
 
   return { ...devices, refresh };

@@ -77,9 +77,20 @@ export function useLocalMedia(options: Options): LocalMedia {
   if (!apiRef.current) {
     async function acquire(): Promise<MediaStream | null> {
       let stream: MediaStream | null = null;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      } catch {
+      const tryGet = async (c: MediaStreamConstraints) => {
+        try {
+          return await navigator.mediaDevices.getUserMedia(c);
+        } catch {
+          return null;
+        }
+      };
+      // Prefer camera + mic, but degrade gracefully: a missing camera shouldn't
+      // also cost the microphone (and vice versa).
+      stream =
+        (await tryGet({ video: true, audio: true })) ??
+        (await tryGet({ audio: true })) ??
+        (await tryGet({ video: true }));
+      if (!stream) {
         optRef.current.onError("Kamera/mikrofon açılamadı — sadece izleme modunda katıldın.");
       }
       streamRef.current = stream;

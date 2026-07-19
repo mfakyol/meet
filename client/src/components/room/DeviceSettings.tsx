@@ -1,4 +1,4 @@
-import { ActionIcon, Popover, Select, Stack, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Popover, Select, Stack, Text, Tooltip } from "@mantine/core";
 import { IconSettings } from "@tabler/icons-react";
 import { canPickSpeaker, useMediaDevices } from "@/hooks/useMediaDevices";
 
@@ -21,9 +21,10 @@ export function DeviceSettings({
   onSpeaker,
 }: Props) {
   const { cameras, mics, speakers, refresh } = useMediaDevices();
+  const empty = cameras.length === 0 && mics.length === 0 && speakers.length === 0;
 
   return (
-    <Popover width={280} position="top" withArrow shadow="md" onOpen={refresh}>
+    <Popover width={280} position="top" withArrow shadow="md" onOpen={() => void refresh()}>
       <Popover.Target>
         <Tooltip label="Cihaz ayarları" withArrow>
           <ActionIcon size={52} radius="xl" variant="default" aria-label="Cihaz ayarları">
@@ -33,6 +34,16 @@ export function DeviceSettings({
       </Popover.Target>
       <Popover.Dropdown>
         <Stack gap="sm">
+          {empty && (
+            <Stack gap={6}>
+              <Text size="xs" c="dimmed">
+                Cihazları görmek için kamera/mikrofon izni gerekiyor.
+              </Text>
+              <Button size="xs" variant="light" onClick={() => void refresh(true)}>
+                Cihazlara izin ver
+              </Button>
+            </Stack>
+          )}
           <Select
             label="Kamera"
             placeholder="Kamera seç"
