@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import type { ChatMessage } from "../lib/useRoom";
+import type { ChatMessage } from "@/types";
 
 interface Props {
   messages: ChatMessage[];

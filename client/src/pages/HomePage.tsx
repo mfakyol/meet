@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { nanoid } from "nanoid";
+import { extractRoomId } from "@/utils/roomId";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -20,10 +21,8 @@ export default function HomePage() {
   function joinRoom(e: FormEvent) {
     e.preventDefault();
     persistName();
-    // Accept a bare code or a full room URL.
-    const raw = code.trim();
-    if (!raw) return;
-    const id = raw.includes("/room/") ? raw.split("/room/")[1].split(/[?#]/)[0] : raw;
+    // Accept a bare code or a full room URL; reject anything that isn't a safe slug.
+    const id = extractRoomId(code);
     if (id) navigate(`/room/${id}`);
   }
 

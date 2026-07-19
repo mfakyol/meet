@@ -1,41 +1,16 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useRoom } from "../lib/useRoom";
-import { VideoTile } from "../components/VideoTile";
-import { ChatPanel } from "../components/ChatPanel";
+import { useRoom } from "@/hooks/useRoom";
+import { VideoTile } from "@/components/room/VideoTile";
+import { ChatPanel } from "@/components/room/ChatPanel";
+import { RoomControls } from "@/components/room/RoomControls";
+import { NameGate } from "@/components/room/NameGate";
 
 function gridCols(total: number): number {
   if (total <= 1) return 1;
   if (total <= 4) return 2;
   if (total <= 9) return 3;
   return 4;
-}
-
-function ControlButton({
-  onClick,
-  active,
-  danger,
-  title,
-  children,
-}: {
-  onClick: () => void;
-  active?: boolean;
-  danger?: boolean;
-  title: string;
-  children: ReactNode;
-}) {
-  const base =
-    "flex h-12 w-12 items-center justify-center rounded-full text-xl transition select-none";
-  const cls = danger
-    ? "bg-red-600 text-white hover:bg-red-500"
-    : active
-      ? "bg-white/15 text-white hover:bg-white/25"
-      : "bg-red-500/90 text-white hover:bg-red-500";
-  return (
-    <button onClick={onClick} title={title} className={`${base} ${cls}`}>
-      {children}
-    </button>
-  );
 }
 
 function Room({
@@ -123,84 +98,17 @@ function Room({
         )}
       </div>
 
-      <footer className="flex items-center justify-center gap-3 border-t border-white/10 px-4 py-4">
-        <ControlButton
-          onClick={room.toggleMic}
-          active={room.micOn}
-          title={room.micOn ? "Mikrofonu kapat" : "Mikrofonu aç"}
-        >
-          {room.micOn ? "🎤" : "🔇"}
-        </ControlButton>
-        <ControlButton
-          onClick={room.toggleCam}
-          active={room.camOn}
-          title={room.camOn ? "Kamerayı kapat" : "Kamerayı aç"}
-        >
-          {room.camOn ? "📷" : "🚫"}
-        </ControlButton>
-        <ControlButton
-          onClick={room.toggleShare}
-          active={!room.sharing}
-          title={room.sharing ? "Paylaşımı durdur" : "Ekranı paylaş"}
-        >
-          🖥️
-        </ControlButton>
-        <ControlButton
-          onClick={() => setChatOpen((v) => !v)}
-          active={!chatOpen}
-          title="Sohbet"
-        >
-          💬
-        </ControlButton>
-        <ControlButton onClick={onLeave} danger title="Görüşmeden ayrıl">
-          📞
-        </ControlButton>
-      </footer>
-    </div>
-  );
-}
-
-function NameGate({
-  roomId,
-  onJoin,
-}: {
-  roomId: string;
-  onJoin: (name: string) => void;
-}) {
-  const [name, setName] = useState(() => sessionStorage.getItem("meet:name") ?? "");
-
-  function submit(e: FormEvent) {
-    e.preventDefault();
-    const n = name.trim();
-    if (n) {
-      sessionStorage.setItem("meet:name", n);
-      onJoin(n);
-    }
-  }
-
-  return (
-    <div className="flex min-h-full items-center justify-center px-4">
-      <form
-        onSubmit={submit}
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-white/10 bg-slate-900/60 p-6 text-center"
-      >
-        <h1 className="text-lg font-semibold">Odaya katıl</h1>
-        <p className="text-sm text-slate-400">Oda: {roomId}</p>
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Görünen adın"
-          className="w-full rounded-lg border border-white/10 bg-slate-800 px-3 py-2.5 text-center outline-none focus:border-indigo-500"
-        />
-        <button
-          type="submit"
-          disabled={!name.trim()}
-          className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 font-semibold text-white disabled:opacity-40"
-        >
-          Katıl
-        </button>
-      </form>
+      <RoomControls
+        micOn={room.micOn}
+        camOn={room.camOn}
+        sharing={room.sharing}
+        chatOpen={chatOpen}
+        onToggleMic={room.toggleMic}
+        onToggleCam={room.toggleCam}
+        onToggleShare={room.toggleShare}
+        onToggleChat={() => setChatOpen((v) => !v)}
+        onLeave={onLeave}
+      />
     </div>
   );
 }
