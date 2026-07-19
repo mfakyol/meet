@@ -121,8 +121,8 @@ export function useRoom(roomId: string, name: string): UseRoom {
   const signaling = useSignaling({
     onPeerJoined: (p) => {
       upsertPeer(p.id, { name: p.name, audio: p.audio, video: p.video });
-      // We are the existing peer → pre-create (with our tracks) and answer.
-      pcs.ensure(p.id, false);
+      // We are the existing peer → polite (we yield on glare).
+      pcs.ensure(p.id, true);
       // If we're sharing, re-announce so the newcomer can label our screen.
       const shared = mediaRef.current?.getSharedScreen();
       if (shared) signalingRef.current?.emitScreen(shared.stream.id);
@@ -172,7 +172,8 @@ export function useRoom(roomId: string, name: string): UseRoom {
           setStatus("joined");
           for (const p of res.peers) {
             upsertPeer(p.id, { name: p.name, audio: p.audio, video: p.video });
-            pcs.ensure(p.id, true); // onnegotiationneeded fires → sends offer
+            // We are the newcomer → impolite (we win glare and drive the offer).
+            pcs.ensure(p.id, false);
           }
         }
       );

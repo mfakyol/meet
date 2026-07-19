@@ -14,8 +14,11 @@ interface Options {
 }
 
 export interface PeerConnections {
-  /** Create (or reuse) the connection to a peer. Only the initiator offers. */
-  ensure: (peerId: string, initiator: boolean) => RTCPeerConnection;
+  /**
+   * Create (or reuse) the connection to a peer. `polite` decides who yields on
+   * glare (the existing peer is polite, the newcomer impolite).
+   */
+  ensure: (peerId: string, polite: boolean) => RTCPeerConnection;
   /** Apply an inbound SDP offer/answer or ICE candidate from a peer. */
   handleSignal: (from: string, data: SignalData) => Promise<void>;
   /**
@@ -33,13 +36,23 @@ export interface PeerConnections {
   closeAll: () => void;
 }
 
-// Owns the mesh of RTCPeerConnections. All WebRTC lifecycle lives here; the hook
-// exposes a stable imperative handle so it never triggers re-subscription.
+// Per-connection perfect-negotiation state.
+interface PcState {
+  polite: boolean;
+  makingOffer: boolean;
+  ignoreOffer: boolean;
+}
+
+// Owns the mesh of RTCPeerConnections using the "perfect negotiation" pattern,
+// so either side can (re)negotiate at any time — e.g. adding/removing a screen
+// track — with glare resolved by the polite/impolite roles. The hook exposes a
+// stable imperative handle so it never triggers re-subscription.
 export function usePeerConnections(options: Options): PeerConnections {
   const optRef = useRef(options);
   optRef.current = options;
 
   const pcs = useRef(new Map<string, RTCPeerConnection>());
+  const state = useRef(new Map<string, PcState>());
   // ICE candidates that arrive before the remote description is set.
   const pendingIce = useRef(new Map<string, RTCIceCandidateInit[]>());
   // The screen-share sender per connection (so we can remove it on stop).
@@ -47,23 +60,14 @@ export function usePeerConnections(options: Options): PeerConnections {
   const apiRef = useRef<PeerConnections | undefined>(undefined);
 
   if (!apiRef.current) {
-    async function makeOffer(pc: RTCPeerConnection, peerId: string): Promise<void> {
-      try {
-        // Avoid glare: only offer from a stable state.
-        if (pc.signalingState !== "stable") return;
-        await pc.setLocalDescription(await pc.createOffer());
-        optRef.current.sendSignal(peerId, { type: "offer", sdp: pc.localDescription?.sdp });
-      } catch (err) {
-        console.error("negotiation error", err);
-      }
-    }
-
-    function ensure(peerId: string, initiator: boolean): RTCPeerConnection {
+    function ensure(peerId: string, polite: boolean): RTCPeerConnection {
       const existing = pcs.current.get(peerId);
       if (existing) return existing;
 
       const pc = new RTCPeerConnection({ iceServers: getIceServers() });
+      const st: PcState = { polite, makingOffer: false, ignoreOffer: false };
       pcs.current.set(peerId, pc);
+      state.current.set(peerId, st);
 
       // Attach camera + mic. If we're mid-share, also send the screen as a
       // separate track so a peer joining during a share gets its own screen tile.
@@ -79,23 +83,19 @@ export function usePeerConnections(options: Options): PeerConnections {
       };
       pc.ontrack = (e) => optRef.current.onRemoteStream(peerId, e.streams[0] ?? null);
 
-      if (initiator) {
-        // Newcomers initiate the first offer to existing peers (avoids glare),
-        // and re-offer on later renegotiation (e.g. screen share add/remove).
-        pc.onnegotiationneeded = () => void makeOffer(pc, peerId);
-      } else {
-        // Existing peers answer the newcomer's first offer rather than offering,
-        // so skip the negotiation triggered by adding the initial tracks — but
-        // still offer on later renegotiation (screen share).
-        let skippedInitial = false;
-        pc.onnegotiationneeded = () => {
-          if (!skippedInitial) {
-            skippedInitial = true;
-            return;
-          }
-          void makeOffer(pc, peerId);
-        };
-      }
+      // Any (re)negotiation — initial tracks, screen add/remove — offers here;
+      // glare is resolved in handleSignal via the polite/impolite roles.
+      pc.onnegotiationneeded = async () => {
+        try {
+          st.makingOffer = true;
+          await pc.setLocalDescription();
+          optRef.current.sendSignal(peerId, { type: "offer", sdp: pc.localDescription?.sdp });
+        } catch (err) {
+          console.error("negotiation error", err);
+        } finally {
+          st.makingOffer = false;
+        }
+      };
       return pc;
     }
 
@@ -114,29 +114,45 @@ export function usePeerConnections(options: Options): PeerConnections {
 
     async function handleSignal(from: string, data: SignalData): Promise<void> {
       let pc = pcs.current.get(from);
-      if (data.type === "offer") {
-        if (!pc) pc = ensure(from, false);
-        await pc.setRemoteDescription({ type: "offer", sdp: data.sdp });
-        await flushIce(from, pc);
-        await pc.setLocalDescription(await pc.createAnswer());
-        optRef.current.sendSignal(from, { type: "answer", sdp: pc.localDescription?.sdp });
-      } else if (data.type === "answer") {
-        if (pc) {
-          await pc.setRemoteDescription({ type: "answer", sdp: data.sdp });
+      let st = state.current.get(from);
+      if (!pc || !st) {
+        // Signal arrived before we set up the peer — treat ourselves as polite.
+        pc = ensure(from, true);
+        st = state.current.get(from)!;
+      }
+
+      try {
+        if (data.type === "offer" || data.type === "answer") {
+          const description = { type: data.type, sdp: data.sdp } as RTCSessionDescriptionInit;
+          const offerCollision =
+            data.type === "offer" && (st.makingOffer || pc.signalingState !== "stable");
+
+          st.ignoreOffer = !st.polite && offerCollision;
+          if (st.ignoreOffer) return;
+
+          // A polite peer with a colliding offer rolls back implicitly here.
+          await pc.setRemoteDescription(description);
           await flushIce(from, pc);
-        }
-      } else if (data.candidate) {
-        if (pc?.remoteDescription) {
-          try {
-            await pc.addIceCandidate(data.candidate);
-          } catch (err) {
-            console.error("addIceCandidate", err);
+
+          if (data.type === "offer") {
+            await pc.setLocalDescription();
+            optRef.current.sendSignal(from, { type: "answer", sdp: pc.localDescription?.sdp });
           }
-        } else {
-          const l = pendingIce.current.get(from) ?? [];
-          l.push(data.candidate);
-          pendingIce.current.set(from, l);
+        } else if (data.candidate) {
+          if (pc.remoteDescription) {
+            try {
+              await pc.addIceCandidate(data.candidate);
+            } catch (err) {
+              if (!st.ignoreOffer) console.error("addIceCandidate", err);
+            }
+          } else {
+            const l = pendingIce.current.get(from) ?? [];
+            l.push(data.candidate);
+            pendingIce.current.set(from, l);
+          }
         }
+      } catch (err) {
+        console.error("handleSignal error", err);
       }
     }
 
@@ -163,12 +179,14 @@ export function usePeerConnections(options: Options): PeerConnections {
       pc?.close();
       if (pc) screenSenders.current.delete(pc);
       pcs.current.delete(peerId);
+      state.current.delete(peerId);
       pendingIce.current.delete(peerId);
     }
 
     function closeAll(): void {
       pcs.current.forEach((pc) => pc.close());
       pcs.current.clear();
+      state.current.clear();
       pendingIce.current.clear();
       screenSenders.current.clear();
     }
