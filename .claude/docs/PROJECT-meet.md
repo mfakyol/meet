@@ -5,8 +5,10 @@ Notes unique to **this** repo. General standards live in the sibling docs
 
 ## Topology
 - Two independent apps, deployed separately:
-  - `client/` — React + Vite + Tailwind v4 SPA, dev on `:5173`. Built to static
-    files, served by an **nginx** container in prod (`client/nginx/default.conf`).
+  - `client/` — React + Vite + Mantine (Sass/CSS-modules) SPA, dev on `:5173`.
+    Built to static files, served by an **nginx** container in prod
+    (`client/nginx/default.conf`). `MantineProvider` is forced dark; theme in
+    `src/theme.ts`, Mantine PostCSS in `postcss.config.cjs`.
   - `server/` — Express + Socket.io, dev on `:5001`. Serves **only** `/health`,
     `/api/*`, and the Socket.io endpoint — it does **not** serve the app HTML.
 - **Implication:** an app-level CSP belongs on the client's **nginx**, not the
@@ -51,6 +53,10 @@ Notes unique to **this** repo. General standards live in the sibling docs
 - Path alias `@/` → `src/` (configured in `tsconfig.json` + `vite.config.ts`).
 - Components live under `components/room/` (`VideoTile`, `ChatPanel`, `RoomControls`,
   `NameGate`). Pages: `HomePage` (create/join), `RoomPage`.
+- **Styling: Mantine** components + props, with `*.module.scss` for the few custom
+  bits (video tile, chat bubbles). Icons: `@tabler/icons-react`. Note: inside
+  `.scss`, use literal `rem`/`em` values — Dart Sass's native `rem()` and Sass
+  `$vars` collide with Mantine's PostCSS `rem()` / `$mantine-breakpoint-*`.
 
 ## Server structure (current)
 - Layered per `backend-file-structure.md`. Entry points:

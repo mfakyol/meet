@@ -13,8 +13,8 @@ never touches the server) with a lightweight **Socket.io** signaling server.
 
 ## Stack
 
-- **client** — Vite + React + TypeScript + Tailwind v4. WebRTC mesh in
-  `src/lib/useRoom.ts`.
+- **client** — Vite + React + TypeScript + Mantine (Sass). WebRTC mesh in
+  `src/hooks/` (`useRoom` + `useLocalMedia`/`usePeerConnections`/`useSignaling`).
 - **server** — Express + Socket.io (TypeScript). Signaling only: relays SDP
   offers/answers + ICE candidates, broadcasts chat and mic/cam state. Rooms are
   in-memory (ephemeral); no database.
