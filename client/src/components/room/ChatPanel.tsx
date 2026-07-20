@@ -2,13 +2,17 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   ActionIcon,
   Group,
+  Popover,
   ScrollArea,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
   Title,
+  Tooltip,
+  UnstyledButton,
 } from "@mantine/core";
-import { IconSend, IconX } from "@tabler/icons-react";
+import { IconMoodSmile, IconSend, IconX } from "@tabler/icons-react";
 import type { ChatMessage } from "@/types";
 import classes from "./ChatPanel.module.scss";
 
@@ -18,9 +22,19 @@ interface Props {
   onClose: () => void;
 }
 
+// A small curated set — enough for quick reactions without a heavy picker lib.
+const EMOJIS = [
+  "😀", "😂", "🤣", "😊", "😍", "😘", "😎", "🤩",
+  "🙂", "😉", "😌", "🤔", "🤗", "😴", "😢", "😭",
+  "😤", "😡", "🥳", "🤯", "😱", "🥺", "😅", "🙃",
+  "👍", "👎", "👏", "🙌", "🙏", "💪", "🤝", "👀",
+  "🔥", "✨", "🎉", "❤️", "💯", "✅", "❌", "💬",
+];
+
 export function ChatPanel({ messages, onSend, onClose }: Props) {
   const [text, setText] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
@@ -31,6 +45,11 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
     if (!text.trim()) return;
     onSend(text);
     setText("");
+  }
+
+  function addEmoji(emoji: string) {
+    setText((t) => t + emoji);
+    inputRef.current?.focus();
   }
 
   return (
@@ -78,7 +97,41 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
           wrap="nowrap"
           style={{ borderTop: "1px solid var(--mantine-color-dark-4)" }}
         >
+          <Popover position="top-start" withArrow shadow="md" width={280}>
+            <Popover.Target>
+              <Tooltip label="Emoji ekle" withArrow>
+                <ActionIcon
+                  type="button"
+                  variant="subtle"
+                  color="gray"
+                  size={36}
+                  aria-label="Emoji ekle"
+                >
+                  <IconMoodSmile size={20} />
+                </ActionIcon>
+              </Tooltip>
+            </Popover.Target>
+            <Popover.Dropdown p="xs">
+              <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                <SimpleGrid cols={8} spacing={2}>
+                  {EMOJIS.map((emoji) => (
+                    <UnstyledButton
+                      key={emoji}
+                      type="button"
+                      className={classes.emojiBtn}
+                      onClick={() => addEmoji(emoji)}
+                      aria-label={emoji}
+                    >
+                      {emoji}
+                    </UnstyledButton>
+                  ))}
+                </SimpleGrid>
+              </div>
+            </Popover.Dropdown>
+          </Popover>
+
           <TextInput
+            ref={inputRef}
             style={{ flex: 1 }}
             placeholder="Mesaj yaz…"
             value={text}

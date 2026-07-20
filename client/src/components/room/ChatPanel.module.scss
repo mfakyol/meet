@@ -4,7 +4,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  background-color: var(--mantine-color-body);
+  // A distinct surface, a touch lighter than the near-black room background.
+  background-color: var(--mantine-color-dark-6);
   border-inline-start: 1px solid var(--mantine-color-dark-4);
 
   // Mobile: overlay the whole content area instead of squeezing beside the grid.
@@ -42,5 +43,17 @@
   &[data-mine="true"] {
     background-color: var(--mantine-primary-color-filled);
     color: var(--mantine-primary-color-contrast);
+  }
+}
+
+.emojiBtn {
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.25rem;
+  border-radius: var(--mantine-radius-sm);
+  text-align: center;
+
+  &:hover {
+    background-color: var(--mantine-color-dark-5);
   }
 }
