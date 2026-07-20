@@ -60,13 +60,7 @@ export default function HomePage() {
               onChange={(e) => setName(e.currentTarget.value)}
             />
 
-            <Button
-              fullWidth
-              size="md"
-              variant="gradient"
-              disabled={!name.trim()}
-              onClick={createRoom}
-            >
+            <Button fullWidth size="md" disabled={!name.trim()} onClick={createRoom}>
               Yeni oda oluştur
             </Button>
 
