@@ -112,21 +112,19 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
               </Tooltip>
             </Popover.Target>
             <Popover.Dropdown p="xs">
-              <div style={{ maxHeight: 200, overflowY: "auto" }}>
-                <SimpleGrid cols={8} spacing={2}>
-                  {EMOJIS.map((emoji) => (
-                    <UnstyledButton
-                      key={emoji}
-                      type="button"
-                      className={classes.emojiBtn}
-                      onClick={() => addEmoji(emoji)}
-                      aria-label={emoji}
-                    >
-                      {emoji}
-                    </UnstyledButton>
-                  ))}
-                </SimpleGrid>
-              </div>
+              <SimpleGrid cols={8} spacing={2}>
+                {EMOJIS.map((emoji) => (
+                  <UnstyledButton
+                    key={emoji}
+                    type="button"
+                    className={classes.emojiBtn}
+                    onClick={() => addEmoji(emoji)}
+                    aria-label={emoji}
+                  >
+                    {emoji}
+                  </UnstyledButton>
+                ))}
+              </SimpleGrid>
             </Popover.Dropdown>
           </Popover>
 
