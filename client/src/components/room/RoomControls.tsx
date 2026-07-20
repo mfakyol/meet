@@ -16,12 +16,14 @@ function ControlButton({
   title,
   color,
   variant = "default",
+  size,
   children,
 }: {
   onClick: () => void;
   title: string;
   color?: string;
   variant?: string;
+  size: number;
   children: ReactNode;
 }) {
   return (
@@ -29,7 +31,7 @@ function ControlButton({
       <ActionIcon
         onClick={onClick}
         aria-label={title}
-        size={52}
+        size={size}
         radius="xl"
         variant={variant}
         color={color}
@@ -45,6 +47,8 @@ interface Props {
   camOn: boolean;
   sharing: boolean;
   chatOpen: boolean;
+  /** Smaller buttons / tighter gaps so all controls fit on a phone. */
+  compact?: boolean;
   onToggleMic: () => void;
   onToggleCam: () => void;
   onToggleShare: () => void;
@@ -54,15 +58,14 @@ interface Props {
   settings?: ReactNode;
 }
 
-const ICON = 24;
-
-// The bottom control bar: mic, camera, screen-share, chat, leave. A control that
-// is "off" (mic/cam muted) is shown filled-red to read as an alert state.
+// The bottom control bar: mic, camera, screen-share, chat, settings, leave. A
+// control that is "off" (mic/cam muted) is shown filled-red as an alert state.
 export function RoomControls({
   micOn,
   camOn,
   sharing,
   chatOpen,
+  compact,
   onToggleMic,
   onToggleCam,
   onToggleShare,
@@ -70,15 +73,29 @@ export function RoomControls({
   onLeave,
   settings,
 }: Props) {
+  const size = compact ? 42 : 52;
+  const icon = compact ? 20 : 24;
+
   return (
-    <Group justify="center" gap="sm" p="md" style={{ borderTop: "1px solid var(--mantine-color-dark-4)" }}>
+    <Group
+      justify="center"
+      gap={compact ? 6 : "sm"}
+      wrap="nowrap"
+      px="xs"
+      py={compact ? "xs" : "md"}
+      style={{
+        borderTop: "1px solid var(--mantine-color-dark-4)",
+        paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + ${compact ? "0.625rem" : "1rem"})`,
+      }}
+    >
       <ControlButton
         onClick={onToggleMic}
         title={micOn ? "Mikrofonu kapat" : "Mikrofonu aç"}
         variant={micOn ? "default" : "filled"}
         color={micOn ? undefined : "red"}
+        size={size}
       >
-        {micOn ? <IconMicrophone size={ICON} /> : <IconMicrophoneOff size={ICON} />}
+        {micOn ? <IconMicrophone size={icon} /> : <IconMicrophoneOff size={icon} />}
       </ControlButton>
 
       <ControlButton
@@ -86,30 +103,39 @@ export function RoomControls({
         title={camOn ? "Kamerayı kapat" : "Kamerayı aç"}
         variant={camOn ? "default" : "filled"}
         color={camOn ? undefined : "red"}
+        size={size}
       >
-        {camOn ? <IconVideo size={ICON} /> : <IconVideoOff size={ICON} />}
+        {camOn ? <IconVideo size={icon} /> : <IconVideoOff size={icon} />}
       </ControlButton>
 
       <ControlButton
         onClick={onToggleShare}
         title={sharing ? "Paylaşımı durdur" : "Ekranı paylaş"}
         variant={sharing ? "light" : "default"}
+        size={size}
       >
-        {sharing ? <IconScreenShareOff size={ICON} /> : <IconScreenShare size={ICON} />}
+        {sharing ? <IconScreenShareOff size={icon} /> : <IconScreenShare size={icon} />}
       </ControlButton>
 
       <ControlButton
         onClick={onToggleChat}
         title="Sohbet"
         variant={chatOpen ? "light" : "default"}
+        size={size}
       >
-        <IconMessage size={ICON} />
+        <IconMessage size={icon} />
       </ControlButton>
 
       {settings}
 
-      <ControlButton onClick={onLeave} title="Görüşmeden ayrıl" variant="filled" color="red">
-        <IconPhoneOff size={ICON} />
+      <ControlButton
+        onClick={onLeave}
+        title="Görüşmeden ayrıl"
+        variant="filled"
+        color="red"
+        size={size}
+      >
+        <IconPhoneOff size={icon} />
       </ControlButton>
     </Group>
   );

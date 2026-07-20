@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  ActionIcon,
   Alert,
   Box,
   Button,
@@ -10,7 +11,9 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  Tooltip,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useRoom } from "@/hooks/useRoom";
 import { VideoTile } from "@/components/room/VideoTile";
@@ -19,7 +22,8 @@ import { RoomControls } from "@/components/room/RoomControls";
 import { DeviceSettings } from "@/components/room/DeviceSettings";
 import { NameGate } from "@/components/room/NameGate";
 
-function gridCols(total: number): number {
+function gridCols(total: number, mobile: boolean): number {
+  if (mobile) return total <= 2 ? 1 : 2;
   if (total <= 1) return 1;
   if (total <= 4) return 2;
   if (total <= 9) return 3;
@@ -39,13 +43,21 @@ function Room({
 }) {
   const room = useRoom(roomId, name);
   const [chatOpen, setChatOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 48em)") ?? false;
 
   const total = room.peers.length + 1;
-  const cols = gridCols(room.tiles.length);
+  const cols = gridCols(room.tiles.length, isMobile);
 
   return (
     <Flex direction="column" h="100%">
-      <Group justify="space-between" gap="sm" p="sm" style={{ borderBottom: BORDER }}>
+      <Group
+        justify="space-between"
+        gap="sm"
+        px="sm"
+        py="xs"
+        wrap="nowrap"
+        style={{ borderBottom: BORDER }}
+      >
         <Stack gap={0} style={{ minWidth: 0 }}>
           <Text fw={600} truncate>
             Oda: {roomId}
@@ -56,16 +68,29 @@ function Room({
           </Text>
         </Stack>
         <CopyButton value={window.location.href} timeout={1500}>
-          {({ copied, copy }) => (
-            <Button
-              variant="default"
-              size="xs"
-              onClick={copy}
-              leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-            >
-              {copied ? "Kopyalandı" : "Linki kopyala"}
-            </Button>
-          )}
+          {({ copied, copy }) =>
+            isMobile ? (
+              <Tooltip label={copied ? "Kopyalandı" : "Linki kopyala"} withArrow>
+                <ActionIcon
+                  variant="default"
+                  size="lg"
+                  onClick={copy}
+                  aria-label="Linki kopyala"
+                >
+                  {copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
+                </ActionIcon>
+              </Tooltip>
+            ) : (
+              <Button
+                variant="default"
+                size="xs"
+                onClick={copy}
+                leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+              >
+                {copied ? "Kopyalandı" : "Linki kopyala"}
+              </Button>
+            )
+          }
         </CopyButton>
       </Group>
 
@@ -75,10 +100,14 @@ function Room({
         </Alert>
       )}
 
-      <Flex mih={0} style={{ flex: 1 }}>
-        <Box component="main" p="md" style={{ flex: 1, minWidth: 0, overflow: "auto" }}>
+      <Flex mih={0} pos="relative" style={{ flex: 1 }}>
+        <Box
+          component="main"
+          p={isMobile ? "xs" : "md"}
+          style={{ flex: 1, minWidth: 0, overflow: "auto" }}
+        >
           <Box mx="auto" maw={cols >= 3 ? "100%" : 1100}>
-            <SimpleGrid cols={cols} spacing="sm">
+            <SimpleGrid cols={cols} spacing={isMobile ? "xs" : "sm"}>
               {room.tiles.map((t) => (
                 <VideoTile
                   key={t.key}
@@ -106,6 +135,7 @@ function Room({
       </Flex>
 
       <RoomControls
+        compact={isMobile}
         micOn={room.micOn}
         camOn={room.camOn}
         sharing={room.sharing}
@@ -117,6 +147,7 @@ function Room({
         onLeave={onLeave}
         settings={
           <DeviceSettings
+            compact={isMobile}
             cameraId={room.cameraId}
             micId={room.micId}
             speakerId={room.speakerId}

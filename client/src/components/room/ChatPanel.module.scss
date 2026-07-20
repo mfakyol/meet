@@ -4,10 +4,18 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  background-color: var(--mantine-color-body);
   border-inline-start: 1px solid var(--mantine-color-dark-4);
 
-  // Mantine's "sm" breakpoint (48em).
+  // Mobile: overlay the whole content area instead of squeezing beside the grid.
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+
+  // Mantine's "sm" breakpoint (48em) and up: dock as a side panel.
   @media (min-width: 48em) {
+    position: static;
+    inset: auto;
     width: 20rem;
   }
 }

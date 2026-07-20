@@ -6,6 +6,7 @@ interface Props {
   cameraId: string | null;
   micId: string | null;
   speakerId: string | null;
+  compact?: boolean;
   onCamera: (deviceId: string) => void;
   onMic: (deviceId: string) => void;
   onSpeaker: (deviceId: string) => void;
@@ -16,6 +17,7 @@ export function DeviceSettings({
   cameraId,
   micId,
   speakerId,
+  compact,
   onCamera,
   onMic,
   onSpeaker,
@@ -27,8 +29,13 @@ export function DeviceSettings({
     <Popover width={280} position="top" withArrow shadow="md" onOpen={() => void refresh()}>
       <Popover.Target>
         <Tooltip label="Cihaz ayarları" withArrow>
-          <ActionIcon size={52} radius="xl" variant="default" aria-label="Cihaz ayarları">
-            <IconSettings size={24} />
+          <ActionIcon
+            size={compact ? 42 : 52}
+            radius="xl"
+            variant="default"
+            aria-label="Cihaz ayarları"
+          >
+            <IconSettings size={compact ? 20 : 24} />
           </ActionIcon>
         </Tooltip>
       </Popover.Target>
