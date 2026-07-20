@@ -157,35 +157,36 @@ export function useRoom(roomId: string, name: string): UseRoom {
   });
   mediaRef.current = media;
 
-  // Lifecycle: acquire media, then join and offer to existing peers.
+  // Lifecycle: enter the room right away — do NOT block on the camera/mic
+  // permission prompt. Media is acquired in parallel and published once granted.
   useEffect(() => {
     let cancelled = false;
+
+    signaling.join({ roomId, name, audio: false, video: false }, (res) => {
+      if (cancelled) return;
+      if (!res.ok) {
+        setError(res.error);
+        setStatus("error");
+        return;
+      }
+      setSelfId(res.selfId);
+      setStatus("joined");
+      for (const p of res.peers) {
+        upsertPeer(p.id, { name: p.name, audio: p.audio, video: p.video });
+        // We are the newcomer → impolite (we win glare and drive the offer).
+        pcs.ensure(p.id, false);
+      }
+    });
+
     void (async () => {
       const stream = await media.acquire();
-      if (cancelled) return;
-      signaling.join(
-        {
-          roomId,
-          name,
-          audio: !!stream?.getAudioTracks().length,
-          video: !!stream?.getVideoTracks().length,
-        },
-        (res) => {
-          if (cancelled) return;
-          if (!res.ok) {
-            setError(res.error);
-            setStatus("error");
-            return;
-          }
-          setSelfId(res.selfId);
-          setStatus("joined");
-          for (const p of res.peers) {
-            upsertPeer(p.id, { name: p.name, audio: p.audio, video: p.video });
-            // We are the newcomer → impolite (we win glare and drive the offer).
-            pcs.ensure(p.id, false);
-          }
-        }
-      );
+      if (cancelled || !stream) return;
+      // Publish our tracks to everyone already connected and announce state.
+      pcs.addLocalTracks(stream);
+      signaling.emitState({
+        audio: !!stream.getAudioTracks().length,
+        video: !!stream.getVideoTracks().length,
+      });
     })();
 
     return () => {

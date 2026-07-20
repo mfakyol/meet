@@ -31,6 +31,11 @@ export interface PeerConnections {
     screenStream: MediaStream | null
   ) => void;
   /**
+   * Publish local media to every connection once it's acquired (we join the
+   * room before the permission prompt resolves). Skips tracks already added.
+   */
+  addLocalTracks: (stream: MediaStream) => void;
+  /**
    * Swap a local track (camera/mic device switch) on every connection. Replaces
    * the sender carrying `oldTrack`; if there's none (was watch-only), adds the
    * new track and renegotiates.
@@ -184,6 +189,15 @@ export function usePeerConnections(options: Options): PeerConnections {
       });
     }
 
+    function addLocalTracks(stream: MediaStream): void {
+      pcs.current.forEach((pc) => {
+        stream.getTracks().forEach((track) => {
+          const already = pc.getSenders().some((s) => s.track === track);
+          if (!already) pc.addTrack(track, stream); // → renegotiation
+        });
+      });
+    }
+
     function replaceTrack(
       oldTrack: MediaStreamTrack | null,
       newTrack: MediaStreamTrack,
@@ -213,7 +227,15 @@ export function usePeerConnections(options: Options): PeerConnections {
       screenSenders.current.clear();
     }
 
-    apiRef.current = { ensure, handleSignal, setSharedScreen, replaceTrack, remove, closeAll };
+    apiRef.current = {
+      ensure,
+      handleSignal,
+      setSharedScreen,
+      addLocalTracks,
+      replaceTrack,
+      remove,
+      closeAll,
+    };
   }
 
   return apiRef.current;
