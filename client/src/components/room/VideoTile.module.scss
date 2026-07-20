@@ -33,13 +33,19 @@
   height: 100%;
 }
 
+// Name badge: a small rounded, semi-transparent bordered rectangle in the
+// bottom-left corner (Zoom style), inset with a margin from the edges.
 .caption {
   position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  display: flex;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  max-width: calc(100% - 1rem);
+  display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--mantine-radius-sm);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(2px);
 }
