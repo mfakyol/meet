@@ -1,4 +1,5 @@
 import { ActionIcon, Group, Tooltip } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 import {
   IconMicrophone,
   IconMicrophoneOff,
@@ -73,6 +74,7 @@ export function RoomControls({
   onLeave,
   settings,
 }: Props) {
+  const { t } = useTranslation();
   const size = compact ? 42 : 52;
   const icon = compact ? 20 : 24;
 
@@ -90,7 +92,7 @@ export function RoomControls({
     >
       <ControlButton
         onClick={onToggleMic}
-        title={micOn ? "Mikrofonu kapat" : "Mikrofonu aç"}
+        title={micOn ? t("controls.micOff") : t("controls.micOn")}
         variant={micOn ? "default" : "filled"}
         color={micOn ? undefined : "red"}
         size={size}
@@ -100,7 +102,7 @@ export function RoomControls({
 
       <ControlButton
         onClick={onToggleCam}
-        title={camOn ? "Kamerayı kapat" : "Kamerayı aç"}
+        title={camOn ? t("controls.camOff") : t("controls.camOn")}
         variant={camOn ? "default" : "filled"}
         color={camOn ? undefined : "red"}
         size={size}
@@ -110,7 +112,7 @@ export function RoomControls({
 
       <ControlButton
         onClick={onToggleShare}
-        title={sharing ? "Paylaşımı durdur" : "Ekranı paylaş"}
+        title={sharing ? t("controls.stopShare") : t("controls.share")}
         variant={sharing ? "light" : "default"}
         size={size}
       >
@@ -119,7 +121,7 @@ export function RoomControls({
 
       <ControlButton
         onClick={onToggleChat}
-        title="Sohbet"
+        title={t("controls.chat")}
         variant={chatOpen ? "light" : "default"}
         size={size}
       >
@@ -130,7 +132,7 @@ export function RoomControls({
 
       <ControlButton
         onClick={onLeave}
-        title="Görüşmeden ayrıl"
+        title={t("controls.leave")}
         variant="filled"
         color="red"
         size={size}

@@ -14,6 +14,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { useTranslation } from "react-i18next";
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useRoom } from "@/hooks/useRoom";
 import { VideoTile } from "@/components/room/VideoTile";
@@ -41,6 +42,7 @@ function Room({
   name: string;
   onLeave: () => void;
 }) {
+  const { t } = useTranslation();
   const room = useRoom(roomId, name);
   const [chatOpen, setChatOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 48em)") ?? false;
@@ -60,22 +62,22 @@ function Room({
       >
         <Stack gap={0} style={{ minWidth: 0 }}>
           <Text fw={600} truncate>
-            Oda: {roomId}
+            {t("room.title", { roomId })}
           </Text>
           <Text size="xs" c="dimmed">
-            {total} katılımcı
-            {room.status === "connecting" && " · bağlanıyor…"}
+            {t("room.participants", { count: total })}
+            {room.status === "connecting" && t("room.connecting")}
           </Text>
         </Stack>
         <CopyButton value={window.location.href} timeout={1500}>
           {({ copied, copy }) =>
             isMobile ? (
-              <Tooltip label={copied ? "Kopyalandı" : "Linki kopyala"} withArrow>
+              <Tooltip label={copied ? t("room.copied") : t("room.copy")} withArrow>
                 <ActionIcon
                   variant="default"
                   size="lg"
                   onClick={copy}
-                  aria-label="Linki kopyala"
+                  aria-label={t("room.copy")}
                 >
                   {copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
                 </ActionIcon>
@@ -87,7 +89,7 @@ function Room({
                 onClick={copy}
                 leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
               >
-                {copied ? "Kopyalandı" : "Linki kopyala"}
+                {copied ? t("room.copied") : t("room.copy")}
               </Button>
             )
           }

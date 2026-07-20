@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { AspectRatio, Avatar, Paper, Text } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 import { IconMicrophoneOff } from "@tabler/icons-react";
 import classes from "./VideoTile.module.scss";
 
@@ -31,7 +32,13 @@ export function VideoTile({
   sharing,
   sinkId,
 }: Props) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLVideoElement>(null);
+  const label = sharing
+    ? t("tile.screen", { name })
+    : self
+      ? t("tile.self", { name })
+      : name;
 
   useEffect(() => {
     if (ref.current && ref.current.srcObject !== stream) {
@@ -72,11 +79,10 @@ export function VideoTile({
 
       <div className={classes.caption}>
         {audioOff && (
-          <IconMicrophoneOff size={16} color="var(--mantine-color-red-4)" aria-label="Mikrofon kapalı" />
+          <IconMicrophoneOff size={16} color="var(--mantine-color-red-4)" aria-label={t("tile.micOff")} />
         )}
         <Text size="sm" fw={500} c="white" truncate>
-          {name}
-          {self && " (sen)"}
+          {label}
         </Text>
       </div>
     </Paper>

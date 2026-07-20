@@ -205,10 +205,10 @@ export function useRoom(roomId: string, name: string): UseRoom {
   const tiles: Tile[] = [];
   for (const p of peers) {
     const screen = screenStreamOf(p);
-    if (screen) tiles.push({ key: `${p.id}:screen`, name: `${p.name} — ekran`, stream: screen, screen: true });
+    if (screen) tiles.push({ key: `${p.id}:screen`, name: p.name, stream: screen, screen: true });
   }
   if (media.localScreen) {
-    tiles.push({ key: "self:screen", name: `${name} — ekran`, stream: media.localScreen, screen: true, self: true, muted: true });
+    tiles.push({ key: "self:screen", name, stream: media.localScreen, screen: true, self: true, muted: true });
   }
   for (const p of peers) {
     tiles.push({

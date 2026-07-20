@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { nanoid } from "nanoid";
+import { useTranslation } from "react-i18next";
 import {
   Button,
   Center,
@@ -13,9 +14,11 @@ import {
   Title,
 } from "@mantine/core";
 import { extractRoomId } from "@/utils/roomId";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [name, setName] = useState(() => sessionStorage.getItem("meet:name") ?? "");
   const [code, setCode] = useState("");
 
@@ -40,42 +43,51 @@ export default function HomePage() {
   return (
     <Center h="100%" p="md">
       <Stack w="100%" maw={420} gap="lg">
+        <Group justify="flex-end">
+          <LanguageSwitcher />
+        </Group>
+
         <Stack gap={4} align="center">
           <Title order={1} size={40}>
-            <Text component="span" inherit variant="gradient">
+            <Text
+              component="span"
+              inherit
+              variant="gradient"
+              gradient={{ from: "zblue.6", to: "zblue.4", deg: 90 }}
+            >
               Meet
             </Text>
           </Title>
           <Text c="dimmed" ta="center">
-            Tarayıcıdan görüntülü görüşme — kurulum yok, linki paylaş, katıl.
+            {t("home.tagline")}
           </Text>
         </Stack>
 
         <Paper withBorder radius="lg" p="lg" shadow="xl">
           <Stack gap="md">
             <TextInput
-              label="Görünen adın"
-              placeholder="Adın"
+              label={t("home.displayName")}
+              placeholder={t("home.namePlaceholder")}
               value={name}
               onChange={(e) => setName(e.currentTarget.value)}
             />
 
             <Button fullWidth size="md" disabled={!name.trim()} onClick={createRoom}>
-              Yeni oda oluştur
+              {t("home.createRoom")}
             </Button>
 
-            <Divider label="veya koda katıl" labelPosition="center" />
+            <Divider label={t("home.orJoinCode")} labelPosition="center" />
 
             <form onSubmit={joinRoom}>
               <Group gap="xs" wrap="nowrap">
                 <TextInput
                   style={{ flex: 1 }}
-                  placeholder="Oda kodu ya da linki"
+                  placeholder={t("home.codePlaceholder")}
                   value={code}
                   onChange={(e) => setCode(e.currentTarget.value)}
                 />
                 <Button type="submit" variant="default" disabled={!name.trim() || !code.trim()}>
-                  Katıl
+                  {t("home.join")}
                 </Button>
               </Group>
             </form>
@@ -83,7 +95,7 @@ export default function HomePage() {
         </Paper>
 
         <Text c="dimmed" size="xs" ta="center">
-          En fazla 8 kişi · uçtan uca P2P (medya sunucudan geçmez)
+          {t("home.footer")}
         </Text>
       </Stack>
     </Center>

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Button, Center, Paper, Stack, Text, TextInput, Title } from "@mantine/core";
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 
 // Asks for a display name before entering a room (persists it for next time).
 export function NameGate({ roomId, onJoin }: Props) {
+  const { t } = useTranslation();
   const [name, setName] = useState(() => sessionStorage.getItem("meet:name") ?? "");
 
   function submit(e: FormEvent) {
@@ -25,22 +27,22 @@ export function NameGate({ roomId, onJoin }: Props) {
         <form onSubmit={submit}>
           <Stack gap="md" align="center">
             <Title order={2} size="h4">
-              Odaya katıl
+              {t("nameGate.title")}
             </Title>
             <Text c="dimmed" size="sm">
-              Oda: {roomId}
+              {t("nameGate.room", { roomId })}
             </Text>
             <TextInput
               w="100%"
               data-autofocus
               autoFocus
-              placeholder="Görünen adın"
+              placeholder={t("nameGate.namePlaceholder")}
               styles={{ input: { textAlign: "center" } }}
               value={name}
               onChange={(e) => setName(e.currentTarget.value)}
             />
             <Button type="submit" fullWidth disabled={!name.trim()}>
-              Katıl
+              {t("nameGate.join")}
             </Button>
           </Stack>
         </form>

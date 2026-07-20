@@ -1,4 +1,5 @@
 import { useRef, useState, type RefObject } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Options {
   /** Mic/cam toggled — broadcast the new state to the room. */
@@ -54,6 +55,11 @@ export function useLocalMedia(options: Options): LocalMedia {
   const optRef = useRef(options);
   optRef.current = options;
 
+  // `t` kept in a ref so the once-created methods below always use the latest.
+  const { t } = useTranslation();
+  const tRef = useRef(t);
+  tRef.current = t;
+
   const streamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const sharingRef = useRef(false);
@@ -80,9 +86,7 @@ export function useLocalMedia(options: Options): LocalMedia {
     async function acquire(): Promise<MediaStream | null> {
       // Insecure context (plain HTTP over a LAN IP, common on mobile) → no media.
       if (!navigator.mediaDevices?.getUserMedia) {
-        optRef.current.onError(
-          "Kamera/mikrofon için güvenli bağlantı (HTTPS) gerekiyor — izleme modundasın."
-        );
+        optRef.current.onError(tRef.current("errors.insecureContext"));
         streamRef.current = null;
         setLocalStream(null);
         return null;
@@ -103,7 +107,7 @@ export function useLocalMedia(options: Options): LocalMedia {
         }
       }
       if (!stream) {
-        optRef.current.onError("Kamera/mikrofon açılamadı — sadece izleme modunda katıldın.");
+        optRef.current.onError(tRef.current("errors.mediaFailed"));
       }
       streamRef.current = stream;
       setLocalStream(stream);
@@ -126,7 +130,9 @@ export function useLocalMedia(options: Options): LocalMedia {
           kind === "video" ? { video: { deviceId: { exact: deviceId } } } : { audio: { deviceId: { exact: deviceId } } }
         );
       } catch {
-        optRef.current.onError(kind === "video" ? "Kamera değiştirilemedi." : "Mikrofon değiştirilemedi.");
+        optRef.current.onError(
+          tRef.current(kind === "video" ? "errors.cameraSwitchFailed" : "errors.micSwitchFailed")
+        );
         return;
       }
       const newTrack = (kind === "video" ? fresh.getVideoTracks()[0] : fresh.getAudioTracks()[0]) ?? null;

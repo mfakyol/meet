@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface DeviceInfo {
   deviceId: string;
@@ -26,6 +27,9 @@ function md(): MediaDevices | undefined {
 // `refresh(true)` will prompt for permission (call it from a user gesture).
 export function useMediaDevices(): Devices & { refresh: (unlock?: boolean) => Promise<void> } {
   const [devices, setDevices] = useState<Devices>({ cameras: [], mics: [], speakers: [] });
+  const { t } = useTranslation();
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const refresh = useCallback(async (unlock = false) => {
     const dev = md();
@@ -53,9 +57,9 @@ export function useMediaDevices(): Devices & { refresh: (unlock?: boolean) => Pr
           .filter((d) => d.kind === kind && d.deviceId)
           .map((d, i) => ({ deviceId: d.deviceId, label: d.label || `${fallback} ${i + 1}` }));
       setDevices({
-        cameras: pick("videoinput", "Kamera"),
-        mics: pick("audioinput", "Mikrofon"),
-        speakers: pick("audiooutput", "Hoparlör"),
+        cameras: pick("videoinput", tRef.current("devices.camera")),
+        mics: pick("audioinput", tRef.current("devices.mic")),
+        speakers: pick("audiooutput", tRef.current("devices.speaker")),
       });
     } catch {
       // enumerateDevices unavailable/blocked — leave lists as-is

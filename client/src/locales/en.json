@@ -1,0 +1,65 @@
+{
+  "home": {
+    "tagline": "Video calls in your browser — no setup, share a link, join.",
+    "displayName": "Your display name",
+    "namePlaceholder": "Your name",
+    "createRoom": "New room",
+    "orJoinCode": "or join with a code",
+    "codePlaceholder": "Room code or link",
+    "join": "Join",
+    "footer": "Up to 8 people · end-to-end P2P (media never touches the server)"
+  },
+  "nameGate": {
+    "title": "Join the room",
+    "room": "Room: {{roomId}}",
+    "namePlaceholder": "Your display name",
+    "join": "Join"
+  },
+  "room": {
+    "title": "Room: {{roomId}}",
+    "participants": "{{count}} participants",
+    "connecting": " · connecting…",
+    "copy": "Copy link",
+    "copied": "Copied"
+  },
+  "controls": {
+    "micOn": "Turn microphone on",
+    "micOff": "Turn microphone off",
+    "camOn": "Turn camera on",
+    "camOff": "Turn camera off",
+    "share": "Share screen",
+    "stopShare": "Stop sharing",
+    "chat": "Chat",
+    "leave": "Leave call"
+  },
+  "chat": {
+    "title": "Chat",
+    "close": "Close chat",
+    "empty": "No messages yet.",
+    "emoji": "Add emoji",
+    "placeholder": "Type a message…",
+    "send": "Send"
+  },
+  "devices": {
+    "settings": "Device settings",
+    "camera": "Camera",
+    "cameraPlaceholder": "Select camera",
+    "mic": "Microphone",
+    "micPlaceholder": "Select microphone",
+    "speaker": "Speaker",
+    "speakerPlaceholder": "Select speaker",
+    "permissionNeeded": "Camera/microphone permission is required to list devices.",
+    "grant": "Allow devices"
+  },
+  "tile": {
+    "self": "{{name}} (you)",
+    "screen": "{{name}} — screen",
+    "micOff": "Microphone off"
+  },
+  "errors": {
+    "mediaFailed": "Couldn't open camera/mic — you joined in view-only mode.",
+    "insecureContext": "A secure connection (HTTPS) is required for camera/mic — you're in view-only mode.",
+    "cameraSwitchFailed": "Couldn't switch camera.",
+    "micSwitchFailed": "Couldn't switch microphone."
+  }
+}

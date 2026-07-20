@@ -1,0 +1,65 @@
+{
+  "home": {
+    "tagline": "Tarayıcıdan görüntülü görüşme — kurulum yok, linki paylaş, katıl.",
+    "displayName": "Görünen adın",
+    "namePlaceholder": "Adın",
+    "createRoom": "Yeni oda oluştur",
+    "orJoinCode": "veya koda katıl",
+    "codePlaceholder": "Oda kodu ya da linki",
+    "join": "Katıl",
+    "footer": "En fazla 8 kişi · uçtan uca P2P (medya sunucudan geçmez)"
+  },
+  "nameGate": {
+    "title": "Odaya katıl",
+    "room": "Oda: {{roomId}}",
+    "namePlaceholder": "Görünen adın",
+    "join": "Katıl"
+  },
+  "room": {
+    "title": "Oda: {{roomId}}",
+    "participants": "{{count}} katılımcı",
+    "connecting": " · bağlanıyor…",
+    "copy": "Linki kopyala",
+    "copied": "Kopyalandı"
+  },
+  "controls": {
+    "micOn": "Mikrofonu aç",
+    "micOff": "Mikrofonu kapat",
+    "camOn": "Kamerayı aç",
+    "camOff": "Kamerayı kapat",
+    "share": "Ekranı paylaş",
+    "stopShare": "Paylaşımı durdur",
+    "chat": "Sohbet",
+    "leave": "Görüşmeden ayrıl"
+  },
+  "chat": {
+    "title": "Sohbet",
+    "close": "Sohbeti kapat",
+    "empty": "Henüz mesaj yok.",
+    "emoji": "Emoji ekle",
+    "placeholder": "Mesaj yaz…",
+    "send": "Gönder"
+  },
+  "devices": {
+    "settings": "Cihaz ayarları",
+    "camera": "Kamera",
+    "cameraPlaceholder": "Kamera seç",
+    "mic": "Mikrofon",
+    "micPlaceholder": "Mikrofon seç",
+    "speaker": "Hoparlör",
+    "speakerPlaceholder": "Hoparlör seç",
+    "permissionNeeded": "Cihazları görmek için kamera/mikrofon izni gerekiyor.",
+    "grant": "Cihazlara izin ver"
+  },
+  "tile": {
+    "self": "{{name}} (sen)",
+    "screen": "{{name}} — ekran",
+    "micOff": "Mikrofon kapalı"
+  },
+  "errors": {
+    "mediaFailed": "Kamera/mikrofon açılamadı — sadece izleme modunda katıldın.",
+    "insecureContext": "Kamera/mikrofon için güvenli bağlantı (HTTPS) gerekiyor — izleme modundasın.",
+    "cameraSwitchFailed": "Kamera değiştirilemedi.",
+    "micSwitchFailed": "Mikrofon değiştirilemedi."
+  }
+}

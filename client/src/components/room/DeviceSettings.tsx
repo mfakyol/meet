@@ -1,4 +1,5 @@
 import { ActionIcon, Button, Popover, Select, Stack, Text, Tooltip } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 import { IconSettings } from "@tabler/icons-react";
 import { canPickSpeaker, useMediaDevices } from "@/hooks/useMediaDevices";
 
@@ -22,18 +23,19 @@ export function DeviceSettings({
   onMic,
   onSpeaker,
 }: Props) {
+  const { t } = useTranslation();
   const { cameras, mics, speakers, refresh } = useMediaDevices();
   const empty = cameras.length === 0 && mics.length === 0 && speakers.length === 0;
 
   return (
     <Popover width={280} position="top" withArrow shadow="md" onOpen={() => void refresh()}>
       <Popover.Target>
-        <Tooltip label="Cihaz ayarları" withArrow>
+        <Tooltip label={t("devices.settings")} withArrow>
           <ActionIcon
             size={compact ? 42 : 52}
             radius="xl"
             variant="default"
-            aria-label="Cihaz ayarları"
+            aria-label={t("devices.settings")}
           >
             <IconSettings size={compact ? 20 : 24} />
           </ActionIcon>
@@ -44,16 +46,16 @@ export function DeviceSettings({
           {empty && (
             <Stack gap={6}>
               <Text size="xs" c="dimmed">
-                Cihazları görmek için kamera/mikrofon izni gerekiyor.
+                {t("devices.permissionNeeded")}
               </Text>
               <Button size="xs" variant="light" onClick={() => void refresh(true)}>
-                Cihazlara izin ver
+                {t("devices.grant")}
               </Button>
             </Stack>
           )}
           <Select
-            label="Kamera"
-            placeholder="Kamera seç"
+            label={t("devices.camera")}
+            placeholder={t("devices.cameraPlaceholder")}
             data={cameras.map((d) => ({ value: d.deviceId, label: d.label }))}
             value={cameraId}
             onChange={(v) => v && onCamera(v)}
@@ -62,8 +64,8 @@ export function DeviceSettings({
             checkIconPosition="right"
           />
           <Select
-            label="Mikrofon"
-            placeholder="Mikrofon seç"
+            label={t("devices.mic")}
+            placeholder={t("devices.micPlaceholder")}
             data={mics.map((d) => ({ value: d.deviceId, label: d.label }))}
             value={micId}
             onChange={(v) => v && onMic(v)}
@@ -73,8 +75,8 @@ export function DeviceSettings({
           />
           {canPickSpeaker && (
             <Select
-              label="Hoparlör"
-              placeholder="Hoparlör seç"
+              label={t("devices.speaker")}
+              placeholder={t("devices.speakerPlaceholder")}
               data={speakers.map((d) => ({ value: d.deviceId, label: d.label }))}
               value={speakerId}
               onChange={(v) => v && onSpeaker(v)}

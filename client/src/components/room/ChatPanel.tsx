@@ -12,6 +12,7 @@ import {
   Tooltip,
   UnstyledButton,
 } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 import { IconMoodSmile, IconSend, IconX } from "@tabler/icons-react";
 import type { ChatMessage } from "@/types";
 import classes from "./ChatPanel.module.scss";
@@ -32,6 +33,7 @@ const EMOJIS = [
 ];
 
 export function ChatPanel({ messages, onSend, onClose }: Props) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -60,9 +62,9 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
         style={{ borderBottom: "1px solid var(--mantine-color-dark-4)" }}
       >
         <Title order={2} size="h5">
-          Sohbet
+          {t("chat.title")}
         </Title>
-        <ActionIcon variant="subtle" color="gray" onClick={onClose} aria-label="Sohbeti kapat">
+        <ActionIcon variant="subtle" color="gray" onClick={onClose} aria-label={t("chat.close")}>
           <IconX size={18} />
         </ActionIcon>
       </Group>
@@ -71,7 +73,7 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
         <Stack gap="sm">
           {messages.length === 0 && (
             <Text c="dimmed" size="sm">
-              Henüz mesaj yok.
+              {t("chat.empty")}
             </Text>
           )}
           {messages.map((m) => (
@@ -99,13 +101,13 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
         >
           <Popover position="top-start" withArrow shadow="md" width={280}>
             <Popover.Target>
-              <Tooltip label="Emoji ekle" withArrow>
+              <Tooltip label={t("chat.emoji")} withArrow>
                 <ActionIcon
                   type="button"
                   variant="subtle"
                   color="gray"
                   size={36}
-                  aria-label="Emoji ekle"
+                  aria-label={t("chat.emoji")}
                 >
                   <IconMoodSmile size={20} />
                 </ActionIcon>
@@ -131,11 +133,11 @@ export function ChatPanel({ messages, onSend, onClose }: Props) {
           <TextInput
             ref={inputRef}
             style={{ flex: 1 }}
-            placeholder="Mesaj yaz…"
+            placeholder={t("chat.placeholder")}
             value={text}
             onChange={(e) => setText(e.currentTarget.value)}
           />
-          <ActionIcon type="submit" size={36} variant="filled" disabled={!text.trim()} aria-label="Gönder">
+          <ActionIcon type="submit" size={36} variant="filled" disabled={!text.trim()} aria-label={t("chat.send")}>
             <IconSend size={18} />
           </ActionIcon>
         </Group>
