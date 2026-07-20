@@ -78,6 +78,15 @@ export function useLocalMedia(options: Options): LocalMedia {
 
   if (!apiRef.current) {
     async function acquire(): Promise<MediaStream | null> {
+      // Insecure context (plain HTTP over a LAN IP, common on mobile) → no media.
+      if (!navigator.mediaDevices?.getUserMedia) {
+        optRef.current.onError(
+          "Kamera/mikrofon için güvenli bağlantı (HTTPS) gerekiyor — izleme modundasın."
+        );
+        streamRef.current = null;
+        setLocalStream(null);
+        return null;
+      }
       let stream: MediaStream | null = null;
       // Try camera+mic first, then narrower requests so a missing camera doesn't
       // also cost the microphone. But stop immediately if the user *declines* —

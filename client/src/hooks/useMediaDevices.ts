@@ -15,23 +15,30 @@ interface Devices {
 export const canPickSpeaker =
   typeof HTMLMediaElement !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
 
+// `navigator.mediaDevices` is undefined in insecure contexts (e.g. plain HTTP
+// over a LAN IP on mobile). Guard every access so the app never crashes there.
+function md(): MediaDevices | undefined {
+  return typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
+}
+
 // Enumerates available input/output devices and keeps the list fresh on
 // hot-plug. Device ids/labels are hidden until media permission is granted, so
-// `refresh(true)` will prompt for permission (call it from a user gesture, e.g.
-// opening the device picker) to unlock the full list.
+// `refresh(true)` will prompt for permission (call it from a user gesture).
 export function useMediaDevices(): Devices & { refresh: (unlock?: boolean) => Promise<void> } {
   const [devices, setDevices] = useState<Devices>({ cameras: [], mics: [], speakers: [] });
 
   const refresh = useCallback(async (unlock = false) => {
+    const dev = md();
+    if (!dev?.enumerateDevices) return;
     try {
-      let list = await navigator.mediaDevices.enumerateDevices();
+      let list = await dev.enumerateDevices();
       // Nothing usable yet (no permission) — ask for it once, then re-enumerate.
       // Stop on an explicit denial so we don't prompt again.
-      if (unlock && !list.some((d) => d.deviceId)) {
+      if (unlock && dev.getUserMedia && !list.some((d) => d.deviceId)) {
         let tmp: MediaStream | null = null;
         for (const c of [{ audio: true, video: true }, { audio: true }, { video: true }]) {
           try {
-            tmp = await navigator.mediaDevices.getUserMedia(c);
+            tmp = await dev.getUserMedia(c);
             break;
           } catch (err) {
             const name = err instanceof DOMException ? err.name : "";
@@ -39,7 +46,7 @@ export function useMediaDevices(): Devices & { refresh: (unlock?: boolean) => Pr
           }
         }
         tmp?.getTracks().forEach((t) => t.stop());
-        list = await navigator.mediaDevices.enumerateDevices();
+        list = await dev.enumerateDevices();
       }
       const pick = (kind: MediaDeviceKind, fallback: string): DeviceInfo[] =>
         list
@@ -56,10 +63,12 @@ export function useMediaDevices(): Devices & { refresh: (unlock?: boolean) => Pr
   }, []);
 
   useEffect(() => {
+    const dev = md();
+    if (!dev) return;
     void refresh();
     const onChange = () => void refresh();
-    navigator.mediaDevices.addEventListener("devicechange", onChange);
-    return () => navigator.mediaDevices.removeEventListener("devicechange", onChange);
+    dev.addEventListener?.("devicechange", onChange);
+    return () => dev.removeEventListener?.("devicechange", onChange);
   }, [refresh]);
 
   return { ...devices, refresh };
