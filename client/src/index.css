@@ -5,3 +5,15 @@ body,
 #root {
   height: 100%;
 }
+
+/* iOS Safari auto-zooms when focusing an input whose font-size is < 16px.
+   Force 16px on mobile so focusing a field never zooms the page. Loaded after
+   Mantine's styles, so it wins for the equal-specificity input class. */
+@media (max-width: 48em) {
+  .mantine-Input-input,
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
