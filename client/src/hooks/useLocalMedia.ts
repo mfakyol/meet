@@ -60,8 +60,10 @@ export function useLocalMedia(options: Options): LocalMedia {
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
-  const [micOn, setMicOn] = useState(true);
-  const [camOn, setCamOn] = useState(true);
+  // Off until media is actually acquired — so before permission the self tile
+  // shows the camera-off placeholder (grey + avatar), not an empty black video.
+  const [micOn, setMicOn] = useState(false);
+  const [camOn, setCamOn] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [cameraId, setCameraId] = useState<string | null>(null);
   const [micId, setMicId] = useState<string | null>(null);
