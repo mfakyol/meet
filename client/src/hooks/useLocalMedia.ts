@@ -77,19 +77,20 @@ export function useLocalMedia(options: Options): LocalMedia {
   if (!apiRef.current) {
     async function acquire(): Promise<MediaStream | null> {
       let stream: MediaStream | null = null;
-      const tryGet = async (c: MediaStreamConstraints) => {
+      // Try camera+mic first, then narrower requests so a missing camera doesn't
+      // also cost the microphone. But stop immediately if the user *declines* —
+      // never nag with a second prompt after a denial/dismiss.
+      const attempts: MediaStreamConstraints[] = [{ video: true, audio: true }, { audio: true }, { video: true }];
+      for (const constraints of attempts) {
         try {
-          return await navigator.mediaDevices.getUserMedia(c);
-        } catch {
-          return null;
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          break;
+        } catch (err) {
+          const name = err instanceof DOMException ? err.name : "";
+          if (name === "NotAllowedError" || name === "SecurityError") break; // declined → respect it
+          // otherwise (NotFoundError/OverconstrainedError/…) a device is missing → try a narrower request
         }
-      };
-      // Prefer camera + mic, but degrade gracefully: a missing camera shouldn't
-      // also cost the microphone (and vice versa).
-      stream =
-        (await tryGet({ video: true, audio: true })) ??
-        (await tryGet({ audio: true })) ??
-        (await tryGet({ video: true }));
+      }
       if (!stream) {
         optRef.current.onError("Kamera/mikrofon açılamadı — sadece izleme modunda katıldın.");
       }

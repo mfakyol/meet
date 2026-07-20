@@ -25,12 +25,19 @@ export function useMediaDevices(): Devices & { refresh: (unlock?: boolean) => Pr
   const refresh = useCallback(async (unlock = false) => {
     try {
       let list = await navigator.mediaDevices.enumerateDevices();
-      // Nothing usable yet (no permission) — ask for it, then re-enumerate.
+      // Nothing usable yet (no permission) — ask for it once, then re-enumerate.
+      // Stop on an explicit denial so we don't prompt again.
       if (unlock && !list.some((d) => d.deviceId)) {
-        const tmp =
-          (await navigator.mediaDevices.getUserMedia({ audio: true, video: true }).catch(() => null)) ??
-          (await navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => null)) ??
-          (await navigator.mediaDevices.getUserMedia({ video: true }).catch(() => null));
+        let tmp: MediaStream | null = null;
+        for (const c of [{ audio: true, video: true }, { audio: true }, { video: true }]) {
+          try {
+            tmp = await navigator.mediaDevices.getUserMedia(c);
+            break;
+          } catch (err) {
+            const name = err instanceof DOMException ? err.name : "";
+            if (name === "NotAllowedError" || name === "SecurityError") break;
+          }
+        }
         tmp?.getTracks().forEach((t) => t.stop());
         list = await navigator.mediaDevices.enumerateDevices();
       }
