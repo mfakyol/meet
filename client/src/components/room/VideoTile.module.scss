@@ -3,7 +3,9 @@
 .tile {
   position: relative;
   overflow: hidden;
-  background-color: var(--mantine-color-dark-8);
+  // Camera-off placeholder colour (Zoom-style grey). When video plays it covers
+  // this; a shared screen letterboxes on the black `.video` background instead.
+  background-color: var(--mantine-color-dark-5);
 }
 
 .video {

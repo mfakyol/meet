@@ -25,9 +25,9 @@ const dark: MantineColorsTuple = [
   "#999999",
   "#6e6e6e",
   "#474747",
-  "#2b2b2b", // borders / subtle surfaces
+  "#2b2b2b", // camera container (camera-off grey) / subtle surfaces
   "#171717", // cards / inputs
-  "#0a0a0a", // body background (reads black)
+  "#0f0f0f", // general (body) background
   "#050505",
   "#000000", // video tiles (pure black)
 ];
