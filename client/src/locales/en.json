@@ -1,13 +1,33 @@
 {
   "home": {
-    "tagline": "Video calls in your browser — no setup, share a link, join.",
+    "headline": "Video meetings, right in your browser",
+    "tagline": "No install, no account. Create a room, share the link, start in seconds.",
+    "cardTitle": "Start a meeting",
     "displayName": "Your display name",
     "namePlaceholder": "Your name",
     "createRoom": "New room",
     "orJoinCode": "or join with a code",
     "codePlaceholder": "Room code or link",
     "join": "Join",
-    "footer": "Up to 8 people · end-to-end P2P (media never touches the server)"
+    "footer": "Up to 8 people · end-to-end P2P (media never touches the server)",
+    "features": {
+      "noSetup": {
+        "title": "Nothing to install",
+        "desc": "No downloads, no sign-up — it runs straight in the browser."
+      },
+      "private": {
+        "title": "End-to-end P2P",
+        "desc": "Audio and video flow directly between participants; nothing is stored on the server."
+      },
+      "tools": {
+        "title": "Screen sharing & chat",
+        "desc": "Share your screen as its own tile and message everyone mid-call."
+      },
+      "capacity": {
+        "title": "Up to 8 people",
+        "desc": "Fast and smooth for small teams and one-on-one calls."
+      }
+    }
   },
   "nameGate": {
     "title": "Join the room",

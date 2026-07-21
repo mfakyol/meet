@@ -1,13 +1,33 @@
 {
   "home": {
-    "tagline": "Tarayıcıdan görüntülü görüşme — kurulum yok, linki paylaş, katıl.",
+    "headline": "Tarayıcıdan görüntülü görüşme",
+    "tagline": "Kurulum yok, hesap yok. Odayı oluştur, linki paylaş, saniyeler içinde başla.",
+    "cardTitle": "Görüşmeye başla",
     "displayName": "Görünen adın",
     "namePlaceholder": "Adın",
     "createRoom": "Yeni oda oluştur",
     "orJoinCode": "veya koda katıl",
     "codePlaceholder": "Oda kodu ya da linki",
     "join": "Katıl",
-    "footer": "En fazla 8 kişi · uçtan uca P2P (medya sunucudan geçmez)"
+    "footer": "En fazla 8 kişi · uçtan uca P2P (medya sunucudan geçmez)",
+    "features": {
+      "noSetup": {
+        "title": "Kurulum gerektirmez",
+        "desc": "Uygulama indirme, hesap açma yok — doğrudan tarayıcıdan."
+      },
+      "private": {
+        "title": "Uçtan uca P2P",
+        "desc": "Görüntü ve ses doğrudan katılımcılar arasında akar, sunucuda saklanmaz."
+      },
+      "tools": {
+        "title": "Ekran paylaşımı ve sohbet",
+        "desc": "Ekranını ayrı bir kutucukta paylaş, görüşme sırasında mesajlaş."
+      },
+      "capacity": {
+        "title": "8 kişiye kadar",
+        "desc": "Küçük ekipler ve birebir görüşmeler için hızlı ve akıcı."
+      }
+    }
   },
   "nameGate": {
     "title": "Odaya katıl",
