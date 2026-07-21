@@ -8,14 +8,16 @@ import {
   CopyButton,
   Flex,
   Group,
+  Paper,
   SimpleGrid,
   Stack,
   Text,
+  ThemeIcon,
   Tooltip,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useTranslation } from "react-i18next";
-import { IconCheck, IconCopy } from "@tabler/icons-react";
+import { IconCheck, IconCopy, IconUsers, IconVideo } from "@tabler/icons-react";
 import { useRoom } from "@/hooks/useRoom";
 import { VideoTile } from "@/components/room/VideoTile";
 import { ChatPanel } from "@/components/room/ChatPanel";
@@ -60,15 +62,23 @@ function Room({
         wrap="nowrap"
         style={{ borderBottom: BORDER }}
       >
-        <Stack gap={0} style={{ minWidth: 0 }}>
-          <Text fw={600} truncate>
-            {t("room.title", { roomId })}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {t("room.participants", { count: total })}
-            {room.status === "connecting" && t("room.connecting")}
-          </Text>
-        </Stack>
+        <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+          <ThemeIcon size={32} radius="md" variant="light" visibleFrom="xs">
+            <IconVideo size={18} />
+          </ThemeIcon>
+          <Stack gap={2} style={{ minWidth: 0 }}>
+            <Text fw={600} truncate>
+              {t("room.title", { roomId })}
+            </Text>
+            <Group gap={6} wrap="nowrap">
+              <IconUsers size={13} color="var(--mantine-color-dimmed)" />
+              <Text size="xs" c="dimmed">
+                {t("room.participants", { count: total })}
+                {room.status === "connecting" && t("room.connecting")}
+              </Text>
+            </Group>
+          </Stack>
+        </Group>
         <CopyButton value={window.location.href} timeout={1500}>
           {({ copied, copy }) =>
             isMobile ? (
@@ -109,6 +119,33 @@ function Room({
           style={{ flex: 1, minWidth: 0, overflow: "auto" }}
         >
           <Box mx="auto" maw={cols >= 3 ? "100%" : 1100}>
+            {room.peers.length === 0 && (
+              <Paper withBorder radius="md" p="md" mb="md">
+                <Group justify="space-between" gap="md" wrap="wrap">
+                  <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                    <Text fw={600} size="sm">
+                      {t("room.alone.title")}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {t("room.alone.desc")}
+                    </Text>
+                  </Stack>
+                  <CopyButton value={window.location.href} timeout={1500}>
+                    {({ copied, copy }) => (
+                      <Button
+                        size="xs"
+                        variant={copied ? "light" : "filled"}
+                        onClick={copy}
+                        leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                      >
+                        {copied ? t("room.copied") : t("room.copy")}
+                      </Button>
+                    )}
+                  </CopyButton>
+                </Group>
+              </Paper>
+            )}
+
             <SimpleGrid cols={cols} spacing={isMobile ? "xs" : "sm"}>
               {room.tiles.map((t) => (
                 <VideoTile

@@ -31,6 +31,7 @@
   },
   "nameGate": {
     "title": "Join the room",
+    "subtitle": "Enter the name others will see in the meeting.",
     "room": "Room: {{roomId}}",
     "namePlaceholder": "Your display name",
     "join": "Join"
@@ -40,7 +41,11 @@
     "participants": "{{count}} participants",
     "connecting": " · connecting…",
     "copy": "Copy link",
-    "copied": "Copied"
+    "copied": "Copied",
+    "alone": {
+      "title": "You're the only one here",
+      "desc": "Share the room link to invite others."
+    }
   },
   "controls": {
     "micOn": "Turn microphone on",

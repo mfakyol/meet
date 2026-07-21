@@ -31,6 +31,7 @@
   },
   "nameGate": {
     "title": "Odaya katıl",
+    "subtitle": "Görüşmeye katılmak için görünen adını gir.",
     "room": "Oda: {{roomId}}",
     "namePlaceholder": "Görünen adın",
     "join": "Katıl"
@@ -40,7 +41,11 @@
     "participants": "{{count}} katılımcı",
     "connecting": " · bağlanıyor…",
     "copy": "Linki kopyala",
-    "copied": "Kopyalandı"
+    "copied": "Kopyalandı",
+    "alone": {
+      "title": "Odada tek başınasın",
+      "desc": "Oda linkini paylaşarak başkalarını davet edebilirsin."
+    }
   },
   "controls": {
     "micOn": "Mikrofonu aç",
