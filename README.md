@@ -6,8 +6,7 @@ flow **directly between participants** and never touch the server. A lightweight
 
 > **Tech:** React · TypeScript · Vite · Mantine · WebRTC · Socket.io · Express · Docker
 
-<!-- Add a short screen-recording GIF and a live demo link here:
-![demo](docs/demo.gif) · **Live demo:** https://… -->
+**Live demo:** [meet.fatihakyol.com](https://meet.fatihakyol.com)
 
 ---
 
