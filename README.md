@@ -8,6 +8,8 @@ flow **directly between participants** and never touch the server. A lightweight
 
 **Live demo:** [meet.fatihakyol.com](https://meet.fatihakyol.com)
 
+![meet screenshot](assets/screenshot.png)
+
 ---
 
 ## Highlights
