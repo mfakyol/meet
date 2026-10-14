@@ -18,6 +18,9 @@ services:
       - PORT=5001
       - NODE_ENV=production
       - MAX_PER_ROOM=8
+      # Allowed CORS / Socket.io origin. Required in production: the server refuses
+      # to start without it rather than fall back to "*".
+      - CLIENT_URL=https://meet.fatihakyol.com
     expose:
       - "5001"
     restart: unless-stopped
